@@ -107,6 +107,17 @@ class Gameboard():
                         possibleBoards.append(newVehicles)
 
         return possibleBoards
+    
+    def get_move_cost(move): 
+        # For now, we assume every move has a cost of 1
+        return 1
+        
+    def get_state(self):
+        # Return a tuple of the current state of the gameboard
+        return tuple((vehicle.id, vehicle.x, vehicle.y, vehicle.orientation) for vehicle in self.vehicles)
+    
+    def get_solution_path(self, state):
+        return state
 
     # check if the red car is at the winning position
     def hasSolved(self):

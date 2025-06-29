@@ -3,6 +3,8 @@ import helpFunctions
 import time
 import resource
 from queue import PriorityQueue
+import psutil
+import os
 
 # File để chứa toàn bộ 4 thuật toán search
 # anh em mình cố gắng code bằng tiếng anh và cmt bằng tiếng anh luôn nha
@@ -20,6 +22,9 @@ from queue import PriorityQueue
 
 # UCS algorithm
 def ucs_algorithm(gameboard: Gameboard):
+    # Get current process (?)
+    process = psutil.Process(os.getpid())
+    
     # Start calculating the time
     start = time.time()
     
@@ -46,11 +51,12 @@ def ucs_algorithm(gameboard: Gameboard):
         if gameboard.hasSolved(current_state):
             # Final statistics for running time and peak memory usage
             end = time.time()
-            peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
+            peak_memory_bytes = process.memory_info().peak_wset
+            peak_memory_mb = peak_memory_bytes / (1024 * 1024)
 
             # Display the statistics
             print(f'Total runtime of the solution is {end - start} seconds')
-            print(f'Peak memory usage is {peak_memory_usage} megabytes')
+            print(f'Peak memory usage is {peak_memory_mb} megabytes')
             print(f'Total expanded nodes is {expanded_nodes} nodes')
             
             return gameboard.get_solution_path(current_state)
@@ -64,7 +70,7 @@ def ucs_algorithm(gameboard: Gameboard):
         expanded_nodes += 1
         
         # Generate successors and their costs
-        for move, next_state in gameboard.get_successors(current_state):
+        for move, next_state in gameboard.checkformoves(current_state):
             if next_state not in visited:
                 new_cost = current_cost + gameboard.get_move_cost(move)
                 open_set.put((new_cost, next_state))
@@ -73,11 +79,12 @@ def ucs_algorithm(gameboard: Gameboard):
     
     # Final statistics for running time and peak memory usage
     end = time.time()
-    peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
+    peak_memory_bytes = process.memory_info().peak_wset
+    peak_memory_mb = peak_memory_bytes / (1024 * 1024)
     
     # Display the statistics
     print(f'Total runtime of the solution is {end - start} seconds')
-    print(f'Peak memory usage is {peak_memory_usage} megabytes')
+    print(f'Peak memory usage is {peak_memory_mb} megabytes')
     print(f'Total expanded nodes is {expanded_nodes} nodes')
     
     # If no solution is found, return None
