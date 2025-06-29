@@ -108,7 +108,7 @@ class Gameboard():
 
         return possibleBoards
     
-    def get_move_cost(move): 
+    def get_move_cost(self): 
         # For now, we assume every move has a cost of 1
         return 1
         
