@@ -106,8 +106,7 @@ class Gameboard():
                         # add new list of vehicles to list of possible boards
                         possibleBoards.append(newVehicles)
 
-        return possibleBoards
-    
+        return possibleBoards    
     def get_state(self):
         # Return a tuple of the current state of the gameboard
         return tuple((vehicle.id, vehicle.x, vehicle.y, vehicle.orientation, vehicle.length) for vehicle in self.vehicles)
