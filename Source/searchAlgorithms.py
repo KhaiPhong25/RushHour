@@ -6,6 +6,7 @@ from queue import PriorityQueue
 import psutil
 import os
 from collections import deque
+from vehicle import Vehicle
 
 # IDS algorithm
 
@@ -90,14 +91,22 @@ def ucs_algorithm(gameboard: Gameboard):
     open_set.put((0, start_state))
     
     # Keep track of visited states to avoid cycles
-    visited = set(0, None)
+    visited = set()
+    
+    parent = {start_state: None}
+    
+    cost_so_far = {start_state: 0}
     
     while open_set:
         # Get the state with the lowest cost
         current_cost, current_state = open_set.get()
         
+        # Reconstruct a Gameboard from the current_state
+        vehicles = [Vehicle(*v) for v in current_state]
+        current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
+        
         # If we reach the goal state i.e. solved, return the path
-        if gameboard.hasSolved(current_state):
+        if current_state.hasSolved():
             # Final statistics for running time and peak memory usage
             end = time.time()
             peak_memory_bytes = process.memory_info().peak_wset
@@ -108,7 +117,7 @@ def ucs_algorithm(gameboard: Gameboard):
             print(f'Peak memory usage is {peak_memory_mb} megabytes')
             print(f'Total expanded nodes is {expanded_nodes} nodes')
             
-            return gameboard.get_solution_path(current_state)
+            return current_state, current_cost
         
         # If this state has already been visited, skip it
         if current_state in visited:
@@ -119,10 +128,17 @@ def ucs_algorithm(gameboard: Gameboard):
         expanded_nodes += 1
         
         # Generate successors and their costs
-        for move, next_state in gameboard.checkformoves(current_state):
-            if next_state not in visited:
-                new_cost = current_cost + gameboard.get_move_cost(move)
+        # Generate successors
+        for new_vehicles in current_board.checkformoves():
+            next_state = tuple((v.id, v.x, v.y, v.orientation) for v in new_vehicles)
+            moved_vehicle = next(v for v in new_vehicles if v not in vehicles)
+            move_cost = moved_vehicle.length
+            new_cost = current_cost + move_cost
+
+            if next_state not in cost_so_far or new_cost < cost_so_far[next_state]:
+                cost_so_far[next_state] = new_cost
                 open_set.put((new_cost, next_state))
+                parent[next_state] = current_state
     
     # Statistics: If no solution is found
     

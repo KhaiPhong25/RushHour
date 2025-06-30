@@ -111,10 +111,6 @@ class Gameboard():
         # Return a tuple of the current state of the gameboard
         return tuple((vehicle.id, vehicle.x, vehicle.y, vehicle.orientation, vehicle.length) for vehicle in self.vehicles)
 
-    def get_move_cost(move): 
-        # Move cost = vehicle length
-        return move.length
-    
     def get_solution_path(self, state):
         return state
 
