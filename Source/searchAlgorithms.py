@@ -93,8 +93,6 @@ def ucs_algorithm(gameboard: Gameboard):
     # Keep track of visited states to avoid cycles
     visited = set()
     
-    parent = {start_state: None}
-    
     cost_so_far = {start_state: 0}
     
     while open_set:
@@ -131,6 +129,9 @@ def ucs_algorithm(gameboard: Gameboard):
         # Generate successors
         for new_vehicles in current_board.checkformoves():
             next_state = tuple((v.id, v.x, v.y, v.orientation) for v in new_vehicles)
+            if next_state in visited:
+                continue  # Skip already visited states
+            
             moved_vehicle = next(v for v in new_vehicles if v not in vehicles)
             move_cost = moved_vehicle.length
             new_cost = current_cost + move_cost
@@ -138,7 +139,6 @@ def ucs_algorithm(gameboard: Gameboard):
             if next_state not in cost_so_far or new_cost < cost_so_far[next_state]:
                 cost_so_far[next_state] = new_cost
                 open_set.put((new_cost, next_state))
-                parent[next_state] = current_state
     
     # Statistics: If no solution is found
     
