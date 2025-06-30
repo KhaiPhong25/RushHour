@@ -29,7 +29,7 @@ def bfs_algorithm(gameboard: Gameboard):
     #start_state = gameboard.get_state()
 
     # If the start state is already solved, return the solution path
-    if gameboard.hasSolved():
+    if gameboard.has_solved():
         end = time.time()
         current, peak = tracemalloc.get_traced_memory()
         print(f'Total runtime of the solution is {end - start} seconds')
@@ -49,19 +49,19 @@ def bfs_algorithm(gameboard: Gameboard):
         expanded_nodes += 1
 
         # Get the successors of the current state
-        for child in current_gameboard.checkformoves():
+        for child in current_gameboard.check_for_moves():
             next_gameboard = Gameboard(gameboard.width, gameboard.height, child)
             # If the next state has not been visited yet
             if next_gameboard.get_state() not in visited:
                 # Check if the next state has solved the game
-                if next_gameboard.hasSolved():
+                if next_gameboard.has_solved():
                     end = time.time()
                     current, peak = tracemalloc.get_traced_memory()
                     print(f'Total runtime of the solution is {end - start} seconds')
                     print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
                     print(f'Total expanded nodes is {expanded_nodes} nodes')
                     tracemalloc.stop()
-                    return next_gameboard.get_state()
+                    return next_gameboard.get_solution_path()
                 
                 # If not solved, add the next state to the queue and mark it as visited
                 queue.append(next_gameboard)
