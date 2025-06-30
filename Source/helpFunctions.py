@@ -58,11 +58,7 @@ def number_blocking_vehicle(game_board):
     return result
 
 # In ra để check Gameboard
-<<<<<<< HEAD
-filename = 'gameboard1.json'
-=======
 filename = ".//Map//gameboard1.json"
->>>>>>> 8d3b6d520698e6eba93ed29372b20612196fc160
 gameboard = load_gameboard(filename)
 print(gameboard)
 print (gameboard.vehicles)
