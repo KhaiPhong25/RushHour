@@ -1,8 +1,6 @@
 from gameboard import Gameboard
 import time
 from queue import PriorityQueue
-import psutil
-import os
 from collections import deque
 import tracemalloc
 from helpFunctions import load_gameboard
@@ -87,8 +85,8 @@ print(bfs_algorithm(gameboard))
 
 # UCS algorithm
 def ucs_algorithm(gameboard: Gameboard):
-    # Get current process (?)
-    process = psutil.Process(os.getpid())
+    #Start memory tracing
+    tracemalloc.start()
     
     # Start calculating the time
     start = time.time()
@@ -122,12 +120,11 @@ def ucs_algorithm(gameboard: Gameboard):
         if current_board.hasSolved():
             # Final statistics for running time and peak memory usage
             end = time.time()
-            peak_memory_bytes = process.memory_info().peak_wset
-            peak_memory_mb = peak_memory_bytes / (1024 * 1024)
+            current, peak = tracemalloc.get_traced_memory()
 
             # Display the statistics
             print(f'Total runtime of the solution is {end - start} seconds')
-            print(f'Peak memory usage is {peak_memory_mb} megabytes')
+            print(f'Peak memory usage is {peak / (1024.0 * 1024.0)} megabytes')
             print(f'Total expanded nodes is {expanded_nodes} nodes')
             
             return current_state, current_cost
@@ -159,12 +156,11 @@ def ucs_algorithm(gameboard: Gameboard):
     
     # Final statistics for running time and peak memory usage
     end = time.time()
-    peak_memory_bytes = process.memory_info().peak_wset
-    peak_memory_mb = peak_memory_bytes / (1024 * 1024)
+    current, peak = tracemalloc.get_traced_memory()
     
     # Display the statistics
     print(f'Total runtime of the solution is {end - start} seconds')
-    print(f'Peak memory usage is {peak_memory_mb} megabytes')
+    print(f'Peak memory usage is {peak / (1024.0 * 1024.0)} megabytes')
     print(f'Total expanded nodes is {expanded_nodes} nodes')
     
     # If no solution is found, return None
