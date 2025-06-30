@@ -2,13 +2,13 @@ import json
 from vehicle import Vehicle
 from gameboard import Gameboard
 
-def load_gameboard(file_name):
+def load_gameboard(file_path):
     # Define the board size (fixed at 6x6 for this project)
     width = 6
     height = 6
 
     # Open the JSON file and load the vehicle data
-    with open(file_name, 'r') as file:
+    with open(file_path, 'r') as file:
         data =  json.load(file)
 
     # Create Vehicle objects from the loaded data
@@ -56,10 +56,3 @@ def number_blocking_vehicle(game_board):
             last_character = current_cell # Remember this vehicle to avoid recounting
     
     return result
-
-# In ra để check Gameboard
-filename = ".//Map//gameboard1.json"
-gameboard = load_gameboard(filename)
-print(gameboard)
-print (gameboard.vehicles)
-print(number_blocking_vehicle(gameboard))

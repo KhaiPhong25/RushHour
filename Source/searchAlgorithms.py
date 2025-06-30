@@ -6,7 +6,86 @@ import tracemalloc
 from helpFunctions import load_gameboard
 from vehicle import Vehicle
 
-# IDS algorithm
+# Depth-Limited Search (DLS) algorithm
+def dls_algorithms(gameboard: Gameboard, limit):
+    # Start calculating the time
+    start = time.time()
+    
+    # Number of expanded nodes
+    expanded_nodes = 0
+    
+    # Initialize the stack (frontier) for DLS
+    frontier = deque()
+    
+    # Keep track of visited states to avoid revisiting the same gameboard
+    visited = set()
+
+    # Initialize result status
+    result_status = "failure"
+
+    # Add the initial gameboard and its depth (0) to the frontier
+    frontier.append((gameboard, 0))
+
+    while frontier:
+        # Pop the most recent gameboard
+        current_gameboard, depth = frontier.pop()
+
+        # Check if current gameboard is the goal state
+        if current_gameboard.has_solved():
+            end = time.time()
+
+            print(f'Total runtime of the solution is {end - start} seconds')
+            print(f'Total expanded nodes is {expanded_nodes} nodes')
+
+            result_status = "success"
+            return current_gameboard, result_status
+        
+        # Skip if depth exceeds the limit
+        if depth > limit:
+            result_status = "cutoff"
+            continue
+
+        # Skip already visited gameboards to avoid cycles
+        if current_gameboard in visited:
+            continue
+        
+        visited.add(current_gameboard)
+        
+        # Increment expanded node count
+        expanded_nodes += 1
+
+        # Generate all possible moves from the current gameboard
+        for vehicles in current_gameboard.check_for_moves():
+            width = 6
+            height = 6
+
+            # Create a new gameboard for each move and add it to the frontier with increased depth
+            next_gameboard = Gameboard(width, height, vehicles)
+            frontier.append((next_gameboard, depth + 1))
+
+    # Return failure if no solution was found within the limit
+    return None, result_status
+
+# Iterative Deepening Search (IDS) algorithm
+def ids_algorithm(gameboard: Gameboard, max_depth):
+    for depth in range(max_depth + 1):
+        # Perform DLS with the current depth
+        result, status = dls_algorithms(gameboard, depth)
+
+        # Return result if a solution is found
+        if status == "success":
+            return result
+        
+        # If DLS failed completely, break out
+        elif status == "failure":
+            break  
+
+        # If DLS was cut off (incomplete due to depth limit), try next depth
+        elif status == "cutoff":
+            continue  
+
+    # Return None if no solution was found after all depth levels
+    return None
 
 # BFS algorithm
 def bfs_algorithm(gameboard: Gameboard):
@@ -75,14 +154,6 @@ def bfs_algorithm(gameboard: Gameboard):
     
     return None
 
-# In ra để check Gameboard
-filename = ".//Map//gameboard1.json"
-gameboard = load_gameboard(filename)
-print(gameboard)
-print (gameboard.vehicles)
-print(bfs_algorithm(gameboard))
-
-
 # UCS algorithm
 def ucs_algorithm(gameboard: Gameboard):
     #Start memory tracing
@@ -117,7 +188,7 @@ def ucs_algorithm(gameboard: Gameboard):
         current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
         
         # If we reach the goal state i.e. solved, return the path
-        if current_board.hasSolved():
+        if current_board.has_solved():
             # Final statistics for running time and peak memory usage
             end = time.time()
             current, peak = tracemalloc.get_traced_memory()
@@ -139,7 +210,7 @@ def ucs_algorithm(gameboard: Gameboard):
         
         # Generate successors and their costs
         # Generate successors
-        for new_vehicles in current_board.checkformoves():
+        for new_vehicles in current_board.check_for_moves():
             next_state = tuple((v.id, v.x, v.y, v.orientation) for v in new_vehicles)
             if next_state in visited:
                 continue  # Skip already visited states
@@ -165,6 +236,5 @@ def ucs_algorithm(gameboard: Gameboard):
     
     # If no solution is found, return None
     return None
-
 
 # A* algorithm

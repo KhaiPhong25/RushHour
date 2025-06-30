@@ -4,7 +4,7 @@ from vehicle import Vehicle
 class Gameboard():
 
     # Constructor of Gameboard class
-    def __init__(self, width = 6, height = 6, vehicles = None):
+    def __init__(self, width, height, vehicles):
         self.width = width
         self.height = height
         #self.parent = parent
