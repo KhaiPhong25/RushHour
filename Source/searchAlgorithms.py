@@ -96,10 +96,6 @@ def ucs_algorithm(gameboard: Gameboard):
         # Get the state with the lowest cost
         current_cost, current_state = open_set.get()
         
-        # Reconstruct a Gameboard from the current_state
-        vehicles = [Vehicle(*v) for v in current_state]
-        current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
-        
         # If we reach the goal state i.e. solved, return the path
         if gameboard.hasSolved(current_state):
             # Final statistics for running time and peak memory usage
