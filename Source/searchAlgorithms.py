@@ -104,7 +104,7 @@ def ucs_algorithm(gameboard: Gameboard):
         current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
         
         # If we reach the goal state i.e. solved, return the path
-        if current_state.hasSolved():
+        if current_board.hasSolved():
             # Final statistics for running time and peak memory usage
             end = time.time()
             peak_memory_bytes = process.memory_info().peak_wset
