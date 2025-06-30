@@ -90,11 +90,15 @@ def ucs_algorithm(gameboard: Gameboard):
     open_set.put((0, start_state))
     
     # Keep track of visited states to avoid cycles
-    visited = set()
+    visited = set(0, None)
     
-    while not open_set.empty():
+    while open_set:
         # Get the state with the lowest cost
         current_cost, current_state = open_set.get()
+        
+        # Reconstruct a Gameboard from the current_state
+        vehicles = [Vehicle(*v) for v in current_state]
+        current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
         
         # If we reach the goal state i.e. solved, return the path
         if gameboard.hasSolved(current_state):
