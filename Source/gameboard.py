@@ -108,9 +108,9 @@ class Gameboard():
 
         return possibleBoards
     
-    def get_move_cost(self): 
-        # Move cost = length of the vehicle 
-        return (self.vehicle.length)
+    def get_move_cost(move): 
+        # For now, we assume every move has a cost of 1
+        return 1
         
     def get_state(self):
         # Return a tuple of the current state of the gameboard
