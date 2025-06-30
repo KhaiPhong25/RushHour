@@ -117,7 +117,7 @@ def ucs_algorithm(gameboard: Gameboard):
         current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
         
         # If we reach the goal state i.e. solved, return the path
-        if current_board.hasSolved():
+        if current_board.has_solved():
             # Final statistics for running time and peak memory usage
             end = time.time()
             current, peak = tracemalloc.get_traced_memory()
@@ -139,7 +139,7 @@ def ucs_algorithm(gameboard: Gameboard):
         
         # Generate successors and their costs
         # Generate successors
-        for new_vehicles in current_board.checkformoves():
+        for new_vehicles in current_board.check_for_moves():
             next_state = tuple((v.id, v.x, v.y, v.orientation) for v in new_vehicles)
             if next_state in visited:
                 continue  # Skip already visited states
