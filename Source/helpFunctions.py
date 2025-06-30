@@ -24,6 +24,6 @@ def load_gameboard(file_name):
     return gameboard
 
 # In ra để check Gameboard
-filename = "gameboard1.json"
+filename = ".//Source//gameboard1.json"
 gameboard = load_gameboard(filename)
 print(gameboard)
