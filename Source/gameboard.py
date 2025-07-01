@@ -7,6 +7,7 @@ class Gameboard():
     def __init__(self, width, height, vehicles):
         self.width = width
         self.height = height
+        #self.parent = parent
 
         # Fill the board with dots
         self.board = [["." for x in range(self.width)] for y in range(self.height)]
@@ -38,7 +39,7 @@ class Gameboard():
     def __eq__(self, other):
         return hash(self) == hash(other)
     
-    def checkformoves(self):
+    def check_for_moves(self):
         # initialize list for possible boards
         possibleBoards = []
 
@@ -107,19 +108,20 @@ class Gameboard():
                         possibleBoards.append(newVehicles)
 
         return possibleBoards    
+    
     def get_state(self):
         # Return a tuple of the current state of the gameboard
-        return tuple((vehicle.id, vehicle.x, vehicle.y, vehicle.orientation) for vehicle in self.vehicles)
+        return tuple((vehicle.id, vehicle.x, vehicle.y, vehicle.orientation, vehicle.length) for vehicle in self.vehicles)
 
-    def get_move_cost(move): 
-        # Move cost = vehicle length
-        return move.length
-    
-    def get_solution_path(self, state):
-        return state
+    def get_solution_path(self):
+        return
+    #if self.parent is None:
+        #    return [self.get_state()]
+        #else:
+        #    return self.parent.get_solution_path() + [self.get_state()]
 
     # check if the red car is at the winning position
-    def hasSolved(self):
+    def has_solved(self):
         for vehicle in self.vehicles:
             winning_x = self.width - 2
             winning_y = math.ceil(self.height / 2) - 1
