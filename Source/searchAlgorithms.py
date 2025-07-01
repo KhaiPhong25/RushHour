@@ -1,16 +1,17 @@
 from gameboard import Gameboard
-import time
-#import resource
+from vehicle import Vehicle
 from queue import PriorityQueue
 from collections import deque
 import helpFunctions
 import tracemalloc
-from helpFunctions import load_gameboard
-from vehicle import Vehicle
+import time
 import config
 
 # Depth-Limited Search (DLS) algorithm
-def dls_algorithms(gameboard: Gameboard, limit):
+def dls_algorithm(gameboard: Gameboard, limit):
+    #Start memory tracing
+    tracemalloc.start()
+
     # Start calculating the time
     start = time.time()
     
@@ -28,6 +29,23 @@ def dls_algorithms(gameboard: Gameboard, limit):
 
     # Add the initial gameboard and its depth (0) to the frontier
     frontier.append((gameboard, 0))
+    initial_id = hash(gameboard)
+    visited[initial_id] = (gameboard, None)  # No parent for root
+
+    # Early goal check
+    if gameboard.has_solved():
+        end = time.time()
+        _, peak = tracemalloc.get_traced_memory()
+
+        print(f'Total runtime of the solution is {end - start:.2f} seconds')
+        print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
+        print(f'Total expanded nodes {expanded_nodes} nodes')
+        tracemalloc.stop()
+
+        result_status = "success"
+        path = helpFunctions.trace_back_solution(visited, gameboard, gameboard)
+
+        return path, result_status
 
     while frontier:
         # Pop the most recent gameboard
@@ -36,34 +54,34 @@ def dls_algorithms(gameboard: Gameboard, limit):
         # Check if current gameboard is the goal state
         if current_gameboard.has_solved():
             end = time.time()
+            _, peak = tracemalloc.get_traced_memory()
 
-            print(f'Total runtime of the solution is {end - start} seconds')
+            print(f'Total runtime of the solution is {end - start:.2f} seconds')
+            print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
             print(f'Total expanded nodes is {expanded_nodes} nodes')
+            tracemalloc.stop()
 
             result_status = "success"
-            return current_gameboard, result_status
+            path = helpFunctions.trace_back_solution(visited, gameboard, current_gameboard)
+
+            return path, result_status
         
         # Skip if depth exceeds the limit
-        if depth > limit:
+        if depth >= limit:
             result_status = "cutoff"
             continue
-
-        # Skip already visited gameboards to avoid cycles
-        state_id = hash(current_gameboard)
-        if state_id in visited:
-            continue
-        
-        visited[state_id] = (current_gameboard)
         
         # Increment expanded node count
         expanded_nodes += 1
 
-        # Generate all possible moves from the current gameboard
-        for vehicles in current_gameboard.check_for_moves():
+        # Get the successors of the current state
+        for new_vehicles in current_gameboard.check_for_moves():
+            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
+            next_id = hash(next_gameboard)
 
-            # Create a new gameboard for each move and add it to the frontier with increased depth
-            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, vehicles)
-            frontier.append((next_gameboard, depth + 1))
+            if next_id not in visited:
+                visited[next_id] = (next_gameboard, current_gameboard)
+                frontier.append((next_gameboard, depth + 1))
 
     # Return failure if no solution was found within the limit
     return None, result_status
@@ -72,11 +90,11 @@ def dls_algorithms(gameboard: Gameboard, limit):
 def ids_algorithm(gameboard: Gameboard, max_depth):
     for depth in range(max_depth + 1):
         # Perform DLS with the current depth
-        result, status = dls_algorithms(gameboard, depth)
+        solution, status = dls_algorithm(gameboard, depth)
 
         # Return result if a solution is found
         if status == "success":
-            return result
+            return solution
         
         # If DLS failed completely, break out
         elif status == "failure":
@@ -111,11 +129,12 @@ def bfs_algorithm(gameboard: Gameboard):
     # If the start state is already solved, return the solution path
     if gameboard.has_solved():
         end = time.time()
-        current, peak = tracemalloc.get_traced_memory()
-        print(f'Total runtime of the solution is {end - start} seconds')
-        print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
+        _, peak = tracemalloc.get_traced_memory()
+        print(f'Total runtime of the solution is {end - start:.2f} seconds')
+        print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
         print(f'Total expanded nodes is {expanded_nodes} nodes')
         tracemalloc.stop()
+
         return helpFunctions.trace_back_solution(visited, gameboard, gameboard)
 
     # While there are states to explore in the queue
@@ -125,20 +144,22 @@ def bfs_algorithm(gameboard: Gameboard):
         expanded_nodes += 1
 
         # Get the successors of the current state
-        for child in current_gameboard.check_for_moves():
-            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, child)
+        for new_vehicles in current_gameboard.check_for_moves():
+            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
             # If the next state has not been visited yet
             if hash(next_gameboard) not in visited:
                 # Check if the next state has solved the game
                 if next_gameboard.has_solved():
                     end = time.time()
-                    current, peak = tracemalloc.get_traced_memory()
-                    print(f'Total runtime of the solution is {end - start} seconds')
-                    print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
+                    _, peak = tracemalloc.get_traced_memory()
+                    print(f'Total runtime of the solution is {end - start:.2f} seconds')
+                    print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
                     print(f'Total expanded nodes is {expanded_nodes} nodes')
                     tracemalloc.stop()
+
                     path = helpFunctions.trace_back_solution(visited, gameboard, current_gameboard)
                     path.append(next_gameboard)
+
                     return path
                 
                 # If not solved, add the next state to the queue and mark it as visited
@@ -147,9 +168,9 @@ def bfs_algorithm(gameboard: Gameboard):
 
     # If no solution is found, return None and print statistics
     end = time.time()
-    current, peak = tracemalloc.get_traced_memory()
-    print(f'Total runtime of the solution is {end - start} seconds')
-    print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
+    _, peak = tracemalloc.get_traced_memory()
+    print(f'Total runtime of the solution is {end - start:.2f} seconds')
+    print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
     print(f'Total expanded nodes is {expanded_nodes} nodes')
     tracemalloc.stop()
     
@@ -191,11 +212,12 @@ def ucs_algorithm(game_board: Gameboard):
             tracemalloc.stop()
 
             # Display the statistics
-            print(f'Total runtime of the solution is {end - start} seconds')
-            print(f'Peak memory usage is {peak / (1024.0 * 1024.0):.2f} megabytes')
+            print(f'Total runtime of the solution is {end - start:.2f} seconds')
+            print(f'Peak memory usage is {peak / (1024.0 * 1024.0):.2f} MB')
             print(f'Total expanded nodes is {expanded_nodes} nodes')
             
-            return helpFunctions.trace_back_solution(visited, game_board, current_board)
+            path = helpFunctions.trace_back_solution(visited, game_board, current_board)
+            return path
         
         # Generate successors and their costs
         # Generate successors
@@ -222,8 +244,8 @@ def ucs_algorithm(game_board: Gameboard):
     current, peak = tracemalloc.get_traced_memory()
     
     # Display the statistics
-    print(f'Total runtime of the solution is {end - start} seconds')
-    print(f'Peak memory usage is {peak / (1024.0 * 1024.0)} megabytes')
+    print(f'Total runtime of the solution is {end - start:.2f} seconds')
+    print(f'Peak memory usage is {peak / (1024.0 * 1024.0):.2f} MB')
     print(f'Total expanded nodes is {expanded_nodes} nodes')
     
     # If no solution is found, return None
@@ -268,20 +290,22 @@ def A_star_algorithm(game_board):
         if current_board.has_solved():
             end_time = time.time()
             _, peak = tracemalloc.get_traced_memory()
-            print(f"Solution found in {end_time - start_time:.2f} seconds")
+            print(f"Total runtime of the solution is {end_time - start_time:.2f} seconds")
             print(f"Peak memory usage is {peak / (1024 * 1024):.2f} MB")
-            print(f"Total expanded node: {num_expanded_node}")
-            return helpFunctions.trace_back_solution(visited, game_board, current_board)
+            print(f"Total expanded node is {num_expanded_node} nodes")
+
+            path = helpFunctions.trace_back_solution(visited, game_board, current_board)
+            return path
         
         # Generate all possible moves from current state
-        for move in current_board.check_for_moves():
+        for new_vehicles in current_board.check_for_moves():
             # Create new game board from this move configuration
-            new_game_board = Gameboard(config.WIDTH, config.HEIGHT, move)
+            new_game_board = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
 
             # Calculate new path cost (g)
             # Add vehicle length as cost when it moves
             new_priority = current_priority
-            for vehicle in move:
+            for vehicle in new_vehicles:
                 if vehicle not in current_board.vehicles:
                     new_priority += vehicle.length 
                     break
@@ -298,20 +322,21 @@ def A_star_algorithm(game_board):
     # if no solution is found, return None
     end_time = time.time()
     _, peak = tracemalloc.get_traced_memory()
-    print(f"Solution found in {end_time - start_time:.2f} seconds")
+    print(f"Total runtime of the solution is {end_time - start_time:.2f} seconds")
     print(f"Peak memory usage is {peak / (1024 * 1024):.2f} MB")
-    print(f"Total expanded node: {num_expanded_node}")
+    print(f"Total expanded node is {num_expanded_node} nodes")
 
     return None
 
 # test case
 filename = "Map/gameboard2.json"
 gameboard = helpFunctions.load_gameboard(filename)
+print(gameboard)
 print('\n \n')
 #A_star_algorithm(gameboard)
-#print(dls_algorithms(gameboard, 10000))
+#print(ids_algorithm(gameboard, 10000))
 #print(bfs_algorithm(gameboard))
 # print(ucs_algorithm(gameboard))
-#helpFunctions.print_solution_path(A_star_algorithm(gameboard))
+helpFunctions.print_solution_path(ids_algorithm(gameboard, 1000))
 #print(ucs_algorithm(gameboard))
 #helpFunctions.print_solution_path(bfs_algorithm(gameboard))
