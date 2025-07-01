@@ -35,7 +35,7 @@ def number_blocking_vehicle(game_board):
         int: Number of unique vehicles blocking the target vehicle's right path.
     """
     result = 0
-    vehicles = game_board.vehicles
+    vehicles = gameboard.vehicles
 
     # The target vehicle is assumed to be the first in the list (typically the red car)
     target_vehicle = vehicles[0]
@@ -57,8 +57,28 @@ def number_blocking_vehicle(game_board):
     
     return result
 
+#trace back solution
+def trace_back_solution(visited_list, initial_state, goal_state):
+    if goal_state == initial_state: return goal_state
+    result = []
+    current_state = goal_state
+    while current_state != initial_state:
+        result.append(current_state)
+        parent = visited_list[hash(current_state)][-1]
+        current_state = parent
+
+    result.reverse()
+    return result
+
+def print_solution_path(path):
+    for i in range(len(path)):
+        print(path[i])
+        print('\n \n')
+
+    print(len(path))
+
 # In ra để check Gameboard
-filename = ".//Map//gameboard1.json"
+filename = "RushHour/Map/gameboard3.json"
 gameboard = load_gameboard(filename)
 print(gameboard)
 print (gameboard.vehicles)
