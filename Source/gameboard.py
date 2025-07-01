@@ -1,13 +1,13 @@
 import math
 from vehicle import Vehicle
+import config
 
 class Gameboard():
 
     # Constructor of Gameboard class
     def __init__(self, width, height, vehicles):
-        self.width = width
-        self.height = height
-        #self.parent = parent
+        self.width = config.WIDTH
+        self.height = config.HEIGHT
 
         # Fill the board with dots
         self.board = [["." for x in range(self.width)] for y in range(self.height)]
@@ -107,18 +107,10 @@ class Gameboard():
                         # add new list of vehicles to list of possible boards
                         possibleBoards.append(newVehicles)
 
-        return possibleBoards    
+        return possibleBoards
     
-    def get_state(self):
-        # Return a tuple of the current state of the gameboard
-        return tuple((vehicle.id, vehicle.x, vehicle.y, vehicle.orientation, vehicle.length) for vehicle in self.vehicles)
-
-    def get_solution_path(self):
-        return
-    #if self.parent is None:
-        #    return [self.get_state()]
-        #else:
-        #    return self.parent.get_solution_path() + [self.get_state()]
+    def get_solution_path(self, state):
+        return state
 
     # check if the red car is at the winning position
     def has_solved(self):
