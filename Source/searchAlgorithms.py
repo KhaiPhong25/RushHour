@@ -7,6 +7,7 @@ import helpFunctions
 import tracemalloc
 from helpFunctions import load_gameboard
 from vehicle import Vehicle
+import config
 
 # Depth-Limited Search (DLS) algorithm
 def dls_algorithms(gameboard: Gameboard, limit):
@@ -59,11 +60,9 @@ def dls_algorithms(gameboard: Gameboard, limit):
 
         # Generate all possible moves from the current gameboard
         for vehicles in current_gameboard.check_for_moves():
-            width = 6
-            height = 6
 
             # Create a new gameboard for each move and add it to the frontier with increased depth
-            next_gameboard = Gameboard(width, height, vehicles)
+            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, vehicles)
             frontier.append((next_gameboard, depth + 1))
 
     # Return failure if no solution was found within the limit
@@ -127,7 +126,7 @@ def bfs_algorithm(gameboard: Gameboard):
 
         # Get the successors of the current state
         for child in current_gameboard.check_for_moves():
-            next_gameboard = Gameboard(gameboard.width, gameboard.height, child)
+            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, child)
             # If the next state has not been visited yet
             if hash(next_gameboard) not in visited:
                 # Check if the next state has solved the game
@@ -155,7 +154,7 @@ def bfs_algorithm(gameboard: Gameboard):
     return None
 
 # UCS algorithm
-def ucs_algorithm(gameboard: Gameboard):
+def ucs_algorithm(game_board: Gameboard):
     #Start memory tracing
     tracemalloc.start()
     
@@ -167,62 +166,52 @@ def ucs_algorithm(gameboard: Gameboard):
     
     # Initialize the priority queue
     open_set = PriorityQueue()
-    
-    # Start with the initial state of the gameboard
-    start_state = gameboard.get_state()
+
+    node_counter = 0 # Used to break ties in priority queue
+
+    # Keep track of visited states to avoid cycles
+    visited = {}
     
     # Push the initial state into the priority queue with cost 0
-    open_set.put((0, start_state))
-    
-    # Keep track of visited states to avoid cycles
-    visited = set()
-    
-    cost_so_far = {start_state: 0}
+    open_set.put((0, node_counter, game_board))
+    visited[hash(game_board)] = (0, game_board)
     
     while open_set:
         # Get the state with the lowest cost
-        current_cost, current_state = open_set.get()
-        
-        # Reconstruct a Gameboard from the current_state
-        vehicles = [Vehicle(*v) for v in current_state]
-        current_board = Gameboard(gameboard.width, gameboard.height, vehicles)
+        current_cost, _, current_board = open_set.get()
+        expanded_nodes += 1
         
         # If we reach the goal state i.e. solved, return the path
         if current_board.has_solved():
             # Final statistics for running time and peak memory usage
             end = time.time()
-            current, peak = tracemalloc.get_traced_memory()
+            _, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()
 
             # Display the statistics
             print(f'Total runtime of the solution is {end - start} seconds')
-            print(f'Peak memory usage is {peak / (1024.0 * 1024.0)} megabytes')
+            print(f'Peak memory usage is {peak / (1024.0 * 1024.0):.2f} megabytes')
             print(f'Total expanded nodes is {expanded_nodes} nodes')
             
-            return current_state, current_cost
-        
-        # If this state has already been visited, skip it
-        if current_state in visited:
-            continue
-        
-        # Mark this state as visited
-        visited.add(current_state)
-        expanded_nodes += 1
+            return helpFunctions.trace_back_solution(visited, game_board, current_board)
         
         # Generate successors and their costs
         # Generate successors
         for new_vehicles in current_board.check_for_moves():
-            next_state = tuple((v.id, v.x, v.y, v.orientation) for v in new_vehicles)
-            if next_state in visited:
-                continue  # Skip already visited states
+            new_game_board = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
             
-            moved_vehicle = next(v for v in new_vehicles if v not in vehicles)
-            move_cost = moved_vehicle.length
-            new_cost = current_cost + move_cost
+            # calculate new cost
+            new_cost = current_cost
+            for vehicle in new_vehicles:
+                if vehicle not in current_board.vehicles:
+                    new_cost += vehicle.length
+                    break
 
-            if next_state not in cost_so_far or new_cost < cost_so_far[next_state]:
-                cost_so_far[next_state] = new_cost
-                open_set.put((new_cost, next_state))
+            # Check if this state is new or has better priority than previous visit
+            if hash(new_game_board) not in visited or new_cost < visited[hash(new_game_board)][0]:
+                node_counter += 1
+                open_set.put((new_cost, node_counter, new_game_board))
+                visited[hash(new_game_board)] = (new_cost, new_game_board, current_board)
     
     # Statistics: If no solution is found
     
@@ -285,14 +274,14 @@ def A_star_algorithm(game_board):
         # Generate all possible moves from current state
         for move in current_board.check_for_moves():
             # Create new game board from this move configuration
-            new_game_board = Gameboard(game_board.width, game_board.height, move)
+            new_game_board = Gameboard(config.WIDTH, config.HEIGHT, move)
 
             # Calculate new path cost (g)
             # Add vehicle length as cost when it moves
             new_priority = current_priority
-            for i in range (0, len(move)):
-                if move[i] != current_board.vehicles[i]:
-                    new_priority += move[i].length 
+            for vehicle in move:
+                if vehicle not in current_board.vehicles:
+                    new_priority += vehicle.length 
                     break
 
             # Calculate new f score (f = g + h)
@@ -314,10 +303,12 @@ def A_star_algorithm(game_board):
     return None
 
 # test case
-filename = "Map/gameboard1.json"
+filename = "Map/gameboard3.json"
 gameboard = helpFunctions.load_gameboard(filename)
 print('\n \n')
-A_star_algorithm(gameboard)
-print(dls_algorithms(gameboard, 10000))
-print(bfs_algorithm(gameboard))
+#A_star_algorithm(gameboard)
+# print(dls_algorithms(gameboard, 10000))
+# print(bfs_algorithm(gameboard))
+# print(ucs_algorithm(gameboard))
 #helpFunctions.print_solution_path(A_star_algorithm(gameboard))
+#print(ucs_algorithm(gameboard))
