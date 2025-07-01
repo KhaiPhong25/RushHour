@@ -36,11 +36,11 @@ def dls_algorithm(gameboard: Gameboard, limit):
     if gameboard.has_solved():
         end = time.time()
         _, peak = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
 
         print(f'Total runtime of the solution is {end - start:.2f} seconds')
         print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
         print(f'Total expanded nodes {expanded_nodes} nodes')
+        tracemalloc.stop()
 
         result_status = "success"
         path = helpFunctions.trace_back_solution(visited, gameboard, gameboard)
