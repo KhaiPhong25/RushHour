@@ -104,6 +104,10 @@ def bfs_algorithm(gameboard: Gameboard):
     # Keep track of visited states to avoid cycles
     visited = {}
 
+    # Add the start state to the queue and mark it as visited
+    queue.append(gameboard)
+    visited[hash(gameboard)] = (None, gameboard)
+
     # If the start state is already solved, return the solution path
     if gameboard.has_solved():
         end = time.time()
@@ -112,11 +116,7 @@ def bfs_algorithm(gameboard: Gameboard):
         print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
         print(f'Total expanded nodes is {expanded_nodes} nodes')
         tracemalloc.stop()
-        return gameboard #helpFunctions.trace_back_solution(visited, gameboard, gameboard)
-    
-    # Add the start state to the queue and mark it as visited
-    queue.append(gameboard)
-    visited[hash(gameboard)] = (gameboard, None)
+        return helpFunctions.trace_back_solution(visited, gameboard, gameboard)
 
     # While there are states to explore in the queue
     while queue:
@@ -137,7 +137,9 @@ def bfs_algorithm(gameboard: Gameboard):
                     print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
                     print(f'Total expanded nodes is {expanded_nodes} nodes')
                     tracemalloc.stop()
-                    return next_gameboard #helpFunctions.trace_back_solution(visited, gameboard, next_gameboard)
+                    path = helpFunctions.trace_back_solution(visited, gameboard, current_gameboard)
+                    path.append(next_gameboard)
+                    return path
                 
                 # If not solved, add the next state to the queue and mark it as visited
                 queue.append(next_gameboard)
@@ -303,7 +305,7 @@ def A_star_algorithm(game_board):
     return None
 
 # test case
-filename = "Map/gameboard1.json"
+filename = "Map/gameboard2.json"
 gameboard = helpFunctions.load_gameboard(filename)
 print('\n \n')
 #A_star_algorithm(gameboard)
