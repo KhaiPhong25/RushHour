@@ -24,7 +24,7 @@ def load_gameboard(file_path):
     return gameboard
 
 # heuristic function for A* algorithm
-def number_blocking_vehicle(game_board):
+def number_blocking_vehicle(gameboard):
     """
     Counts the number of distinct vehicles blocking the target vehicle's path to the exit.
     
@@ -48,8 +48,8 @@ def number_blocking_vehicle(game_board):
     last_character = '.' # '.' represents empty space
 
     # Scan all cells to the right of the target vehicle
-    for col in range(x_position + 1, game_board.width):
-        current_cell = game_board.board[y_position][col]
+    for col in range(x_position + 1, gameboard.width):
+        current_cell = gameboard.board[y_position][col]
         # If we find a new vehicle (not empty and different from last seen)
         if current_cell != '.' and current_cell != last_character:
             result += 1
@@ -59,9 +59,12 @@ def number_blocking_vehicle(game_board):
 
 #trace back solution
 def trace_back_solution(visited_list, initial_state, goal_state):
-    if goal_state == initial_state: return goal_state
+    if goal_state == initial_state: 
+        return goal_state
+    
     result = []
     current_state = goal_state
+    
     while current_state != initial_state:
         result.append(current_state)
         parent = visited_list[hash(current_state)][-1]
@@ -78,8 +81,8 @@ def print_solution_path(path):
     print(len(path))
 
 # In ra để check Gameboard
-filename = "Map/gameboard3.json"
-gameboard = load_gameboard(filename)
-print(gameboard)
-print (gameboard.vehicles)
-print(number_blocking_vehicle(gameboard))
+#filename = "Map/gameboard3.json"
+#gameboard = load_gameboard(filename)
+#print(gameboard)
+#print (gameboard.vehicles)
+#print(number_blocking_vehicle(gameboard))
