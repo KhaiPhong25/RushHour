@@ -167,7 +167,7 @@ def ucs_algorithm(game_board: Gameboard):
     expanded_nodes = 0
     
     # Initialize the priority queue
-    open_set = PriorityQueue()
+    frontier = PriorityQueue()
 
     node_counter = 0 # Used to break ties in priority queue
 
@@ -175,12 +175,12 @@ def ucs_algorithm(game_board: Gameboard):
     visited = {}
     
     # Push the initial state into the priority queue with cost 0
-    open_set.put((0, node_counter, game_board))
+    frontier.put((0, node_counter, game_board))
     visited[hash(game_board)] = (0, game_board)
     
-    while open_set:
+    while frontier:
         # Get the state with the lowest cost
-        current_cost, _, current_board = open_set.get()
+        current_cost, _, current_board = frontier.get()
         expanded_nodes += 1
         
         # If we reach the goal state i.e. solved, return the path
@@ -212,7 +212,7 @@ def ucs_algorithm(game_board: Gameboard):
             # Check if this state is new or has better priority than previous visit
             if hash(new_game_board) not in visited or new_cost < visited[hash(new_game_board)][0]:
                 node_counter += 1
-                open_set.put((new_cost, node_counter, new_game_board))
+                frontier.put((new_cost, node_counter, new_game_board))
                 visited[hash(new_game_board)] = (new_cost, new_game_board, current_board)
     
     # Statistics: If no solution is found
