@@ -1,0 +1,2 @@
+WIDTH = 6
+HEIGHT = 6
