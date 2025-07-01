@@ -112,11 +112,11 @@ def bfs_algorithm(gameboard: Gameboard):
         print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
         print(f'Total expanded nodes is {expanded_nodes} nodes')
         tracemalloc.stop()
-        return gameboard.get_solution_path()
+        return gameboard #helpFunctions.trace_back_solution(visited, gameboard, gameboard)
     
     # Add the start state to the queue and mark it as visited
     queue.append(gameboard)
-    visited[hash(gameboard)] = gameboard
+    visited[hash(gameboard)] = (gameboard, None)
 
     # While there are states to explore in the queue
     while queue:
@@ -137,11 +137,11 @@ def bfs_algorithm(gameboard: Gameboard):
                     print(f'Peak memory usage is {peak / (1024 * 1024)} megabytes')
                     print(f'Total expanded nodes is {expanded_nodes} nodes')
                     tracemalloc.stop()
-                    return next_gameboard.get_solution_path()
+                    return next_gameboard #helpFunctions.trace_back_solution(visited, gameboard, next_gameboard)
                 
                 # If not solved, add the next state to the queue and mark it as visited
                 queue.append(next_gameboard)
-                visited[hash(next_gameboard)] = next_gameboard
+                visited[hash(next_gameboard)] = (next_gameboard, current_gameboard)
 
     # If no solution is found, return None and print statistics
     end = time.time()
@@ -303,12 +303,13 @@ def A_star_algorithm(game_board):
     return None
 
 # test case
-filename = "Map/gameboard3.json"
+filename = "Map/gameboard1.json"
 gameboard = helpFunctions.load_gameboard(filename)
 print('\n \n')
 #A_star_algorithm(gameboard)
-# print(dls_algorithms(gameboard, 10000))
-# print(bfs_algorithm(gameboard))
+#print(dls_algorithms(gameboard, 10000))
+#print(bfs_algorithm(gameboard))
 # print(ucs_algorithm(gameboard))
 #helpFunctions.print_solution_path(A_star_algorithm(gameboard))
 #print(ucs_algorithm(gameboard))
+#helpFunctions.print_solution_path(bfs_algorithm(gameboard))
