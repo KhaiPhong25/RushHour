@@ -78,7 +78,7 @@ def print_solution_path(path):
     print(len(path))
 
 # In ra để check Gameboard
-filename = "RushHour/Map/gameboard3.json"
+filename = "Map/gameboard3.json"
 gameboard = load_gameboard(filename)
 print(gameboard)
 print (gameboard.vehicles)

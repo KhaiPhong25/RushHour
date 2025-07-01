@@ -13,19 +13,14 @@ def dls_algorithms(gameboard: Gameboard, limit):
     # Start calculating the time
     start = time.time()
     
-#     # Number of expanded nodes
-#     expanded_nodes = 0
-    
-#     # Initialize the queue for BFS
-#     queue = deque()
-    
-#     # Keep track of visited states to avoid cycles
-#     visited = set()
+    # Number of expanded nodes
+    expanded_nodes = 0
+
     # Initialize the stack (frontier) for DLS
     frontier = deque()
     
     # Keep track of visited states to avoid revisiting the same gameboard
-    visited = set()
+    visited = {}
 
     # Initialize result status
     result_status = "failure"
@@ -53,10 +48,11 @@ def dls_algorithms(gameboard: Gameboard, limit):
             continue
 
         # Skip already visited gameboards to avoid cycles
-        if current_gameboard in visited:
+        state_id = hash(current_gameboard)
+        if state_id in visited:
             continue
         
-        visited.add(current_gameboard)
+        visited[state_id] = (current_gameboard)
         
         # Increment expanded node count
         expanded_nodes += 1
@@ -107,27 +103,8 @@ def bfs_algorithm(gameboard: Gameboard):
     # Initialize the queue for BFS
     queue = deque()
     # Keep track of visited states to avoid cycles
-    visited = set()
+    visited = {}
 
-#     # Start with the initial state of the gameboard
-#     start_state = gameboard.get_state()
-    # Start with the initial state of the gameboard
-    #start_state = gameboard.get_state()
-
-#     # If the initial state is already solved, return the solution path
-#     if gameboard.hasSolved(start_state):
-#         end = time.time()
-#         peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
-        
-#         print(f'Total runtime of the solution is {end - start} seconds')
-#         print(f'Peak memory usage is {peak_memory_usage} megabytes')
-#         print(f'Total expanded nodes is {expanded_nodes} nodes')
-        
-#         return gameboard.get_solution_path(start_state)
-
-#     # Initialize the queue with the start state
-#     queue.append(start_state)
-#     visited.add(start_state)
     # If the start state is already solved, return the solution path
     if gameboard.has_solved():
         end = time.time()
@@ -140,31 +117,8 @@ def bfs_algorithm(gameboard: Gameboard):
     
     # Add the start state to the queue and mark it as visited
     queue.append(gameboard)
-    visited.add(gameboard)
+    visited[hash(gameboard)] = gameboard
 
-#     # While there are states in the queue, continue searching
-#     while queue:
-#         # Get the current state from the queue
-#         current_state = queue.popleft()
-#         # Incresing the number of expanded nodes
-#         expanded_nodes += 1
-#         # Generate successors for the current state
-#         for next_state in gameboard.get_successors(current_state):
-#             # If the new state has not been visited, add it to the queue, mark it as visited and check if it is the goal state
-#             if next_state not in visited:
-#                 # If the new state is the goal state, return the solution path
-#                 if gameboard.hasSolved(next_state):
-#                     end = time.time()
-#                     peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
-                    
-#                     print(f'Total runtime of the solution is {end - start} seconds')
-#                     print(f'Peak memory usage is {peak_memory_usage} megabytes')
-#                     print(f'Total expanded nodes is {expanded_nodes} nodes')
-                    
-#                     return gameboard.get_solution_path(next_state)
-            
-#                 queue.append(next_state)
-#                 visited.add(next_state)
     # While there are states to explore in the queue
     while queue:
         # Get the current state from the queue and increase the expanded nodes count
@@ -175,7 +129,7 @@ def bfs_algorithm(gameboard: Gameboard):
         for child in current_gameboard.check_for_moves():
             next_gameboard = Gameboard(gameboard.width, gameboard.height, child)
             # If the next state has not been visited yet
-            if next_gameboard.get_state() not in visited:
+            if hash(next_gameboard) not in visited:
                 # Check if the next state has solved the game
                 if next_gameboard.has_solved():
                     end = time.time()
@@ -188,10 +142,8 @@ def bfs_algorithm(gameboard: Gameboard):
                 
                 # If not solved, add the next state to the queue and mark it as visited
                 queue.append(next_gameboard)
-                visited.add(next_gameboard)
+                visited[hash(next_gameboard)] = next_gameboard
 
-#     # If no solution is found, return None
-#     return None
     # If no solution is found, return None and print statistics
     end = time.time()
     current, peak = tracemalloc.get_traced_memory()
@@ -240,6 +192,7 @@ def ucs_algorithm(gameboard: Gameboard):
             # Final statistics for running time and peak memory usage
             end = time.time()
             current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
 
             # Display the statistics
             print(f'Total runtime of the solution is {end - start} seconds')
@@ -297,6 +250,7 @@ def A_star_algorithm(game_board):
         Gameboard: The solved board configuration if found, None otherwise
     """
     start_time = time.time()
+    tracemalloc.start()
 
     # Initialize priority queue for frontier nodes
     frontier = PriorityQueue()
@@ -320,14 +274,16 @@ def A_star_algorithm(game_board):
         current_priority -= helpFunctions.number_blocking_vehicle(current_board)
 
         # Check if current state is the solution
-        if current_board.hasSolved():
+        if current_board.has_solved():
             end_time = time.time()
+            _, peak = tracemalloc.get_traced_memory()
             print(f"Solution found in {end_time - start_time:.2f} seconds")
+            print(f"Peak memory usage is {peak / (1024 * 1024):.2f} MB")
             print(f"Total expanded node: {num_expanded_node}")
             return helpFunctions.trace_back_solution(visited, game_board, current_board)
         
         # Generate all possible moves from current state
-        for move in current_board.checkformoves():
+        for move in current_board.check_for_moves():
             # Create new game board from this move configuration
             new_game_board = Gameboard(game_board.width, game_board.height, move)
 
@@ -347,10 +303,21 @@ def A_star_algorithm(game_board):
                 node_counter += 1
                 frontier.put((new_priority, node_counter, new_game_board))
                 visited[hash(new_game_board)] = (new_priority, new_game_board, current_board)
+    
+    # if no solution is found, return None
+    end_time = time.time()
+    _, peak = tracemalloc.get_traced_memory()
+    print(f"Solution found in {end_time - start_time:.2f} seconds")
+    print(f"Peak memory usage is {peak / (1024 * 1024):.2f} MB")
+    print(f"Total expanded node: {num_expanded_node}")
+
+    return None
 
 # test case
-filename = "RushHour/Map/gameboard3.json"
+filename = "Map/gameboard1.json"
 gameboard = helpFunctions.load_gameboard(filename)
 print('\n \n')
 A_star_algorithm(gameboard)
+print(dls_algorithms(gameboard, 10000))
+print(bfs_algorithm(gameboard))
 #helpFunctions.print_solution_path(A_star_algorithm(gameboard))
