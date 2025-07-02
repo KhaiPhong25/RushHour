@@ -29,8 +29,7 @@ def dls_algorithm(gameboard: Gameboard, limit):
 
     # Add the initial gameboard and its depth (0) to the frontier
     frontier.append((gameboard, 0))
-    initial_id = hash(gameboard)
-    visited[initial_id] = (gameboard, None)  # No parent for root
+    visited[gameboard] = (gameboard, None)  # No parent for root
 
     # Early goal check
     if gameboard.has_solved():
@@ -77,10 +76,9 @@ def dls_algorithm(gameboard: Gameboard, limit):
         # Get the successors of the current state
         for new_vehicles in current_gameboard.check_for_moves():
             next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
-            next_id = hash(next_gameboard)
 
-            if next_id not in visited:
-                visited[next_id] = (next_gameboard, current_gameboard)
+            if next_gameboard not in visited:
+                visited[next_gameboard] = (next_gameboard, current_gameboard)
                 frontier.append((next_gameboard, depth + 1))
 
     # Return failure if no solution was found within the limit
@@ -124,7 +122,7 @@ def bfs_algorithm(gameboard: Gameboard):
 
     # Add the start state to the queue and mark it as visited
     queue.append(gameboard)
-    visited[hash(gameboard)] = (None, gameboard)
+    visited[gameboard] = (None, gameboard)
 
     # If the start state is already solved, return the solution path
     if gameboard.has_solved():
@@ -147,7 +145,7 @@ def bfs_algorithm(gameboard: Gameboard):
         for new_vehicles in current_gameboard.check_for_moves():
             next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
             # If the next state has not been visited yet
-            if hash(next_gameboard) not in visited:
+            if next_gameboard not in visited:
                 # Check if the next state has solved the game
                 if next_gameboard.has_solved():
                     end = time.time()
@@ -164,7 +162,7 @@ def bfs_algorithm(gameboard: Gameboard):
                 
                 # If not solved, add the next state to the queue and mark it as visited
                 queue.append(next_gameboard)
-                visited[hash(next_gameboard)] = (next_gameboard, current_gameboard)
+                visited[next_gameboard] = (next_gameboard, current_gameboard)
 
     # If no solution is found, return None and print statistics
     end = time.time()
@@ -197,7 +195,7 @@ def ucs_algorithm(game_board: Gameboard):
     
     # Push the initial state into the priority queue with cost 0
     frontier.put((0, node_counter, game_board))
-    visited[hash(game_board)] = (0, game_board)
+    visited[game_board] = (0, game_board)
     
     while frontier:
         # Get the state with the lowest cost
@@ -232,10 +230,10 @@ def ucs_algorithm(game_board: Gameboard):
                     break
 
             # Check if this state is new or has better priority than previous visit
-            if hash(new_game_board) not in visited or new_cost < visited[hash(new_game_board)][0]:
+            if new_game_board not in visited or new_cost < visited[new_game_board][0]:
                 node_counter += 1
                 frontier.put((new_cost, node_counter, new_game_board))
-                visited[hash(new_game_board)] = (new_cost, new_game_board, current_board)
+                visited[new_game_board] = (new_cost, new_game_board, current_board)
     
     # Statistics: If no solution is found
     
@@ -276,7 +274,7 @@ def A_star_algorithm(game_board):
 
     # Add initial state to frontier
     frontier.put((heuristic_value_root, node_counter, game_board))
-    visited[hash(game_board)] = (heuristic_value_root, game_board)
+    visited[game_board] = (heuristic_value_root, game_board)
 
     while not frontier.empty():
         # Get the next node with lowest priority (f = g + h)
@@ -314,10 +312,10 @@ def A_star_algorithm(game_board):
             new_priority += helpFunctions.number_blocking_vehicle(new_game_board)
 
             # Check if this state is new or has better priority than previous visit
-            if hash(new_game_board) not in visited or new_priority < visited[hash(new_game_board)][0]:
+            if new_game_board not in visited or new_priority < visited[new_game_board][0]:
                 node_counter += 1
                 frontier.put((new_priority, node_counter, new_game_board))
-                visited[hash(new_game_board)] = (new_priority, new_game_board, current_board)
+                visited[new_game_board] = (new_priority, new_game_board, current_board)
     
     # if no solution is found, return None
     end_time = time.time()
@@ -334,9 +332,9 @@ gameboard = helpFunctions.load_gameboard(filename)
 print(gameboard)
 print('\n \n')
 #A_star_algorithm(gameboard)
-#print(ids_algorithm(gameboard, 10000))
-#print(bfs_algorithm(gameboard))
-# print(ucs_algorithm(gameboard))
-helpFunctions.print_solution_path(ids_algorithm(gameboard, 1000))
+#ids_algorithm(gameboard, 10000)
+#bfs_algorithm(gameboard)
+#ucs_algorithm(gameboard)
+#helpFunctions.print_solution_path(ids_algorithm(gameboard, 1000))
 #print(ucs_algorithm(gameboard))
 #helpFunctions.print_solution_path(bfs_algorithm(gameboard))

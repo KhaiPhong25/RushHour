@@ -71,7 +71,7 @@ def trace_back_solution(visited_list, initial_state, goal_state):
     
     while current_state != initial_state:
         result.append(current_state)
-        parent = visited_list[hash(current_state)][-1]
+        parent = visited_list[current_state][-1]
         current_state = parent
 
     result.reverse()
@@ -85,8 +85,8 @@ def print_solution_path(path):
     print(len(path))
 
 # In ra để check Gameboard
-filename = "Map/gameboard3.json"
-gameboard = load_gameboard(filename)
-print(gameboard)
-print (gameboard.vehicles)
-print(number_blocking_vehicle(gameboard))
+# filename = "Map/gameboard3.json"
+# gameboard = load_gameboard(filename)
+# print(gameboard)
+# print (gameboard.vehicles)
+# print(number_blocking_vehicle(gameboard))
