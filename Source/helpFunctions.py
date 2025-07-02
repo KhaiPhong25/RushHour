@@ -37,8 +37,12 @@ def number_blocking_vehicle(gameboard):
     result = 0
     vehicles = gameboard.vehicles
 
-    # The target vehicle is assumed to be the first in the list (typically the red car)
-    target_vehicle = vehicles[0]
+    # Find the target vehicle with id "#"
+    target_vehicle = None
+    for vehicle in vehicles:
+        if vehicle.id == "#":
+            target_vehicle = vehicle
+            break
 
     # Get target vehicle's rightmost position 
     y_position = target_vehicle.y
@@ -81,8 +85,8 @@ def print_solution_path(path):
     print(len(path))
 
 # In ra để check Gameboard
-#filename = "Map/gameboard3.json"
-#gameboard = load_gameboard(filename)
-#print(gameboard)
-#print (gameboard.vehicles)
-#print(number_blocking_vehicle(gameboard))
+filename = "Map/gameboard3.json"
+gameboard = load_gameboard(filename)
+print(gameboard)
+print (gameboard.vehicles)
+print(number_blocking_vehicle(gameboard))

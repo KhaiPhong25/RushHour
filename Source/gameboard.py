@@ -26,6 +26,9 @@ class Gameboard():
                 for i in range(vehicle.length):
                     self.board[int(vehicle.y + i)][int(vehicle.x)] = vehicle.id
 
+        # arrange the order of vehicles in matrix order
+        self.vehicles = sorted(vehicles, key=lambda v: (v.y, v.x))
+
     # Represents the gameboard object as a string
     def __repr__(self):
         self.printableboard = '\n\n'.join(['      '.join(['{}'.format(item) for item in row]) for row in self.board])
