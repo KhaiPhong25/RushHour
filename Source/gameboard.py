@@ -38,9 +38,13 @@ class Gameboard():
     def __hash__(self):
         return hash(self.__repr__())
     
-    # Compare two hashed gameboards
+    # Compare two gameboard
     def __eq__(self, other):
-        return hash(self) == hash(other)
+        for v in self.vehicles:
+            if v not in other.vehicles: 
+                return False
+        
+        return True
     
     def check_for_moves(self):
         # initialize list for possible boards

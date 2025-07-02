@@ -18,4 +18,4 @@ class Vehicle():
 
     # Compare two hashed vehicles
     def __eq__(self, other):
-        return hash(self) == hash(other)
+        return self.id == other.id and self.x == other.x and self.y == other.y and self.orientation == other.orientation
