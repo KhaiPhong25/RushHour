@@ -122,7 +122,7 @@ def bfs_algorithm(gameboard: Gameboard):
 
     # Add the start state to the queue and mark it as visited
     queue.append(gameboard)
-    visited[gameboard] = (None, gameboard)
+    visited[gameboard] = (gameboard, None)
 
     # If the start state is already solved, return the solution path
     if gameboard.has_solved():
@@ -327,13 +327,15 @@ def A_star_algorithm(game_board):
     return None
 
 # test case
-filename = "Map/gameboard2.json"
+filename = "Map/gameboard1.json"
 gameboard = helpFunctions.load_gameboard(filename)
 print(gameboard)
+print(gameboard.vehicles)
 print('\n \n')
 #A_star_algorithm(gameboard)
 #ids_algorithm(gameboard, 10000)
-#bfs_algorithm(gameboard)
+#print(len(bfs_algorithm(gameboard)))
+#helpFunctions.print_solution_path(bfs_algorithm(gameboard))
 #ucs_algorithm(gameboard)
 #helpFunctions.print_solution_path(ids_algorithm(gameboard, 1000))
 #print(ucs_algorithm(gameboard))

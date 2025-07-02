@@ -74,6 +74,7 @@ def trace_back_solution(visited_list, initial_state, goal_state):
         parent = visited_list[current_state][-1]
         current_state = parent
 
+    result.append(initial_state)
     result.reverse()
     return result
 
