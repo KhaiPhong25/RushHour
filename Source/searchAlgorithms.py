@@ -24,9 +24,6 @@ def dls_algorithm(gameboard: Gameboard, limit):
     # Keep track of visited states to avoid revisiting the same gameboard
     visited = {}
 
-    # Initialize result status
-    result_status = "failure"
-
     # Add the initial gameboard and its depth (0) to the frontier
     frontier.append((gameboard, 0))
     visited[gameboard] = (gameboard, None)  # No parent for root
@@ -41,33 +38,16 @@ def dls_algorithm(gameboard: Gameboard, limit):
         print(f'Total expanded nodes {expanded_nodes} nodes')
         tracemalloc.stop()
 
-        result_status = "success"
         path = helpFunctions.trace_back_solution(visited, gameboard, gameboard)
 
-        return path, result_status
+        return path
 
     while frontier:
         # Pop the most recent gameboard
         current_gameboard, depth = frontier.pop()
-
-        # Check if current gameboard is the goal state
-        if current_gameboard.has_solved():
-            end = time.time()
-            _, peak = tracemalloc.get_traced_memory()
-
-            print(f'Total runtime of the solution is {end - start:.2f} seconds')
-            print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
-            print(f'Total expanded nodes is {expanded_nodes} nodes')
-            tracemalloc.stop()
-
-            result_status = "success"
-            path = helpFunctions.trace_back_solution(visited, gameboard, current_gameboard)
-
-            return path, result_status
         
         # Skip if depth exceeds the limit
-        if depth >= limit:
-            result_status = "cutoff"
+        if depth > limit:
             continue
         
         # Increment expanded node count
@@ -78,31 +58,26 @@ def dls_algorithm(gameboard: Gameboard, limit):
             next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
 
             if next_gameboard not in visited:
+
+                # Check if next gameboard is the goal state
+                if next_gameboard.has_solved():
+                    end = time.time()
+                    _, peak = tracemalloc.get_traced_memory()
+
+                    print(f'Total runtime of the solution is {end - start:.2f} seconds')
+                    print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
+                    print(f'Total expanded nodes is {expanded_nodes} nodes')
+                    tracemalloc.stop()
+
+                    path = helpFunctions.trace_back_solution(visited, gameboard, current_gameboard)
+                    path.append(next_gameboard)
+
+                    return path
+
                 visited[next_gameboard] = (next_gameboard, current_gameboard)
                 frontier.append((next_gameboard, depth + 1))
 
     # Return failure if no solution was found within the limit
-    return None, result_status
-
-# Iterative Deepening Search (IDS) algorithm
-def ids_algorithm(gameboard: Gameboard, max_depth):
-    for depth in range(max_depth + 1):
-        # Perform DLS with the current depth
-        solution, status = dls_algorithm(gameboard, depth)
-
-        # Return result if a solution is found
-        if status == "success":
-            return solution
-        
-        # If DLS failed completely, break out
-        elif status == "failure":
-            break  
-
-        # If DLS was cut off (incomplete due to depth limit), try next depth
-        elif status == "cutoff":
-            continue  
-
-    # Return None if no solution was found after all depth levels
     return None
 
 # BFS algorithm
@@ -337,6 +312,6 @@ print('\n \n')
 #print(len(bfs_algorithm(gameboard)))
 #helpFunctions.print_solution_path(bfs_algorithm(gameboard))
 #ucs_algorithm(gameboard)
-#helpFunctions.print_solution_path(ids_algorithm(gameboard, 1000))
+#helpFunctions.print_solution_path(dls_algorithm(gameboard, config.MAX_LIMIT))
 #print(ucs_algorithm(gameboard))
 #helpFunctions.print_solution_path(bfs_algorithm(gameboard))
