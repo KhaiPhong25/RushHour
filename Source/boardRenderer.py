@@ -1,47 +1,56 @@
 import pygame
-from gameboard import Gameboard
-from vehicleSprite import VehicleSprite
+from gameboard import Gameboard        
+from vehicleSprite import VehicleSprite  
 
+# BoardRenderer handles rendering the game board and vehicles on screen
 class BoardRenderer:
     def __init__(self, gameboard: Gameboard, board_image_path, cell_size = 62, grid_size = 6, offset_x = 275, offset_y = 172):
-        self.gameboard = gameboard
-        self.cell_size = cell_size
-        self.grid_size = grid_size
-        
-        # Load the board image and scale it to fit the window size
+        self.gameboard = gameboard      # The game logic board
+        self.cell_size = cell_size      # Size of each grid cell in pixels
+        self.grid_size = grid_size      # Number of rows/columns (default is 6 for Rush Hour)
+
+        # Load and scale the board background image to match the screen size (800x650)
         self.board_image = pygame.image.load(board_image_path).convert()
         original_width, original_height = self.board_image.get_size()
         self.board_image = pygame.transform.scale(self.board_image, (800, 650))
 
+        # Calculate scaled offset to correctly align vehicles on resized board
         scale_x = 800 / original_width
         scale_y = 650 / original_height
         self.offset_x = int(offset_x * scale_x)
         self.offset_y = int(offset_y * scale_y)
 
+        # Create a list of VehicleSprite objects from the initial gameboard state
         self.vehicle_sprites = []
         for vehicle in self.gameboard.vehicles:
             image_path = f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
             self.vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
 
+    # Draw the board and all vehicle sprites on the screen
     def draw(self, screen):
-        screen.blit(self.board_image, (0, 0))  # Draw the board image at the top-left corner
+        screen.blit(self.board_image, (0, 0))  # Draw the game board background at (0,0)
         for sprite in self.vehicle_sprites:
-            sprite.draw(screen, self.cell_size, self.offset_x, self.offset_y)
+            sprite.draw(screen, self.cell_size, self.offset_x, self.offset_y)  # Draw each vehicle sprite
 
+    # Update the board renderer with a new gameboard state
     def update(self, gameboard: Gameboard):
         self.gameboard = gameboard
-        
-        # Create a dictionary to map vehicle IDs to their sprites
+
+        # Create a lookup dictionary of current sprites by vehicle ID
         sprite_dict = {sprite.vehicle.id: sprite for sprite in self.vehicle_sprites}
         new_vehicle_sprites = []
-        
+
         for vehicle in gameboard.vehicles:
             if vehicle.id in sprite_dict:
+                # If vehicle already exists, update its position
                 sprite = sprite_dict[vehicle.id]
                 sprite.update(vehicle)
                 new_vehicle_sprites.append(sprite)
+
             else:
-                image_path = f"Image/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
+                # If new vehicle, create new sprite (note: path corrected below)
+                image_path = f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
                 new_vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
-        
+
+        # Replace the current sprite list with the updated one
         self.vehicle_sprites = new_vehicle_sprites
