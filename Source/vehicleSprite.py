@@ -20,3 +20,7 @@ class VehicleSprite:
         y = self.vehicle.y * cell_size + offset_y
         
         screen.blit(self.image, (x, y))
+
+    def update(self, vehicle: Vehicle):
+        self.vehicle.x = vehicle.x
+        self.vehicle.y = vehicle.y

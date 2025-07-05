@@ -1,9 +1,6 @@
 import pygame
-import os
-
 from gameboard import Gameboard
 from vehicleSprite import VehicleSprite
-import helpFunctions  # Assuming this is a module that contains the load_gameboard function
 
 class BoardRenderer:
     def __init__(self, gameboard: Gameboard, board_image_path, cell_size = 62, grid_size = 6, offset_x = 275, offset_y = 172):
@@ -23,10 +20,28 @@ class BoardRenderer:
 
         self.vehicle_sprites = []
         for vehicle in self.gameboard.vehicles:
-            image_path = f"Image/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
+            image_path = f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
             self.vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
 
     def draw(self, screen):
         screen.blit(self.board_image, (0, 0))  # Draw the board image at the top-left corner
         for sprite in self.vehicle_sprites:
             sprite.draw(screen, self.cell_size, self.offset_x, self.offset_y)
+
+    def update(self, gameboard: Gameboard):
+        self.gameboard = gameboard
+        
+        # Create a dictionary to map vehicle IDs to their sprites
+        sprite_dict = {sprite.vehicle.id: sprite for sprite in self.vehicle_sprites}
+        new_vehicle_sprites = []
+        
+        for vehicle in gameboard.vehicles:
+            if vehicle.id in sprite_dict:
+                sprite = sprite_dict[vehicle.id]
+                sprite.update(vehicle)
+                new_vehicle_sprites.append(sprite)
+            else:
+                image_path = f"Image/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
+                new_vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
+        
+        self.vehicle_sprites = new_vehicle_sprites
