@@ -1,7 +1,8 @@
 import pygame
 import sys
 import button
-import game_runner
+#import game_runner
+import config
 import boardRenderer
 import helpFunctions
 from searchAlgorithms import bfs_algorithm, dls_algorithm, A_star_algorithm, ucs_algorithm
@@ -88,7 +89,10 @@ def select_algorithm_callback(algo_func):
     if board_renderer:
         file_name = f"Map/gameboard{selected_level}.json"
         gameboard = helpFunctions.load_gameboard(file_name)
-        list_boardgame = current_solver(gameboard)
+        if algo_func.__name__ == 'dls_algorithm':
+            list_boardgame = current_solver(gameboard, config.MAX_LIMIT)
+        else:
+            list_boardgame = current_solver(gameboard)
         current_step_index = 0
         start_solve_flag = True
 
