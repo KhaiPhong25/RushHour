@@ -190,12 +190,10 @@ if __name__ == "__main__":
                     btn.handle_event(event)
 
             if show_algo_selector:
-                paused_game_flag = True
                 for btn in algorithm_buttons:
                     btn.handle_event(event)
                     
             if not show_algo_selector:
-                paused_game_flag = False
                 pause_button.handle_event(event)
                 reset_button.handle_event(event)
                 select_algo_button.handle_event(event)
