@@ -54,3 +54,20 @@ class BoardRenderer:
 
         # Replace the current sprite list with the updated one
         self.vehicle_sprites = new_vehicle_sprites
+    
+    def update_main_vehicle_final_animation(self, gameboard, final_move):
+        # Create a lookup dictionary of current sprites by vehicle ID
+        sprite_dict = {sprite.vehicle.id: sprite for sprite in self.vehicle_sprites}
+        new_vehicle_sprites = []
+
+        for vehicle in gameboard.vehicles:
+            if vehicle.id in sprite_dict:
+                sprite = sprite_dict[vehicle.id]
+                if vehicle.id == "#":
+                    sprite.update_x_to_move(final_move)
+                # If vehicle already exists, update its position
+                sprite = sprite_dict[vehicle.id]
+                new_vehicle_sprites.append(sprite)
+
+        # Replace the current sprite list with the updated one
+        self.vehicle_sprites = new_vehicle_sprites

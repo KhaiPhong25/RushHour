@@ -46,6 +46,8 @@ show_algo_selector = False
 board_renderer = None
 list_boardgame = []
 current_step_index = 0
+#
+final_move = 1
 
 # Toggle pause/resume and update icon
 def toggle_pause():
@@ -230,6 +232,13 @@ if __name__ == "__main__":
                     board_renderer.update(list_boardgame[current_step_index])
                     current_step_index += 1
                     pygame.time.delay(250)
+                else:
+                    if final_move < 6:
+                        board_renderer.update_main_vehicle_final_animation(list_boardgame[current_step_index - 1], final_move)
+                        final_move += 1
+                        pygame.time.delay(100)
+                    else:
+                        final_move = 1
 
             # Always draw current board state and controls
             board_renderer.draw(SCREEN)
