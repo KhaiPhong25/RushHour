@@ -1,7 +1,6 @@
 import pygame
 import sys
 import button
-#import game_runner
 import config
 import boardRenderer
 import helpFunctions
@@ -24,7 +23,7 @@ level_background = pygame.transform.scale(level_background, (WIDTH, HEIGHT))
 # Set up welcome message with fade effect
 text_surface = FONT.render("Click on the screen to start the game", True, (255, 255, 255))
 text_surface = text_surface.convert_alpha()
-text_rect = text_surface.get_rect(center=(398, 360))
+text_rect = text_surface.get_rect(center = (398, 360))
 
 alpha = 0
 fade_speed = 3
@@ -70,9 +69,11 @@ def reset_game():
 # Check and reset reset flag
 def is_reset():
     global reset_game_flag
+
     if reset_game_flag:
         reset_game_flag = False
         return True
+    
     return False
 
 # Display algorithm selection overlay
@@ -91,10 +92,13 @@ def select_algorithm_callback(algo_func):
     if board_renderer:
         file_name = f"Map/gameboard{selected_level}.json"
         gameboard = helpFunctions.load_gameboard(file_name)
+
         if algo_func.__name__ == 'dls_algorithm':
             list_boardgame = current_solver(gameboard, config.MAX_LIMIT)
+
         else:
             list_boardgame = current_solver(gameboard)
+
         current_step_index = 0
         start_solve_flag = True
 
@@ -110,7 +114,8 @@ def create_algorithm_buttons(font):
         def make_callback(f):
             return lambda: select_algorithm_callback(f)
         
-        btn = button.Button(start_x, start_y + i * gap, width, height, text=name, callback=make_callback(func), font=font)
+        btn = button.Button(start_x, start_y + i * gap, width, height, text = name, 
+                            callback = make_callback(func), font = font)
         buttons.append(btn)
 
     algorithm_buttons = buttons
@@ -148,8 +153,8 @@ def create_level_buttons(font, callback):
         level_number = i + 1
         x = start_x + (i % columns) * gap
         y = start_y + (i // columns) * gap
-        btn = button.Button(x, y, width, height, "", lambda lv=level_number: callback(lv),
-                            font, icon_path=f"Images/Levels/level{level_number}.png")
+        btn = button.Button(x, y, width, height, "", lambda lv = level_number: callback(lv),
+                            font, icon_path = f"Images/Levels/level{level_number}.png")
         buttons.append(btn)
 
     return buttons
@@ -175,10 +180,13 @@ if __name__ == "__main__":
                 running = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                state_game_flag = True
-
-            for btn in level_buttons:
-                btn.handle_event(event)
+                if not state_game_flag:
+                    state_game_flag = True
+                    continue
+            
+            if state_game_flag and selected_level is None:
+                for btn in level_buttons:
+                    btn.handle_event(event)
 
             if show_algo_selector:
                 for btn in algorithm_buttons:
