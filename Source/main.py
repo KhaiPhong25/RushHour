@@ -213,9 +213,13 @@ if __name__ == "__main__":
                     btn.handle_event(event)
 
             if show_algo_selector:
-                close_algo_selector_button.handle_event(event)
-                for btn in algorithm_buttons:
-                    btn.handle_event(event)
+                if not paused_game_flag:
+                    toggle_pause()
+                
+                else:    
+                    close_algo_selector_button.handle_event(event)
+                    for btn in algorithm_buttons:
+                        btn.handle_event(event)
 
             if not show_algo_selector:
                 pause_button.handle_event(event)
