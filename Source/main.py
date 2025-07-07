@@ -41,6 +41,7 @@ close_game_flag = False
 reset_game_flag = False
 start_solve_flag = False
 should_load_level_flag = False
+last_vehicle_id = '#'
 
 # Variables to store user selections
 selected_level = None
@@ -48,7 +49,7 @@ selected_algorithm = None
 current_solver = None
 show_algo_selector = False
 board_renderer = None
-list_boardgame = []
+list_boardgame = None
 current_step_index = 0
 final_move = 1
 
@@ -108,6 +109,16 @@ def select_algorithm_callback(algo_func):
         current_step_index = 0
         start_solve_flag = True
 
+def next_level():
+    global selected_level
+    selected_level = selected_level + 1
+    global should_load_level_flag
+    should_load_level_flag = True
+    global start_solve_flag
+    start_solve_flag = False
+    global list_boardgame
+    list_boardgame = None
+
 # Create buttons for selecting search algorithms
 algorithm_buttons = []
 def create_algorithm_buttons(font):
@@ -165,6 +176,7 @@ close_button = button.Button(720, 20, 50, 50, "", close_game, FONT, "Images/Butt
 pause_button = button.Button(660, 20, 50, 50, "", toggle_pause, FONT, "Images/Buttons/pause.png")
 reset_button = button.Button(600, 20, 50, 50, "", reset_game, FONT, "Images/Buttons/reset.png")
 select_algo_button = button.Button(540, 20, 50, 50, "", select_algorithm, FONT, "Images/Buttons/choice.png")
+next_level_button = button.Button(540, 20, 50, 50, "", next_level, FONT, "Images/Buttons/nextlevel.png")
 
 # Generate level selection buttons (1-10)
 def create_level_buttons(font, callback):
@@ -213,10 +225,10 @@ if __name__ == "__main__":
                     btn.handle_event(event)
 
             if show_algo_selector:
-                if not paused_game_flag:
-                    toggle_pause()
+                # if not paused_game_flag:
+                #     toggle_pause()
                 
-                else:    
+                # else:    
                     close_algo_selector_button.handle_event(event)
                     for btn in algorithm_buttons:
                         btn.handle_event(event)
@@ -224,7 +236,10 @@ if __name__ == "__main__":
             if not show_algo_selector:
                 pause_button.handle_event(event)
                 reset_button.handle_event(event)
-                select_algo_button.handle_event(event)
+                if not list_boardgame:
+                    select_algo_button.handle_event(event)
+                if list_boardgame and current_step_index >= len(list_boardgame):
+                    next_level_button.handle_event(event)
                 close_button.handle_event(event)
 
         # Show welcome screen with fading text
@@ -266,7 +281,7 @@ if __name__ == "__main__":
                 if current_step_index < len(list_boardgame):
                     board_renderer.update(list_boardgame[current_step_index])
                     current_step_index += 1
-                    pygame.time.delay(250)
+                    pygame.time.delay(150)
 
                 else:
                     # Final animation for winning condition
@@ -281,9 +296,11 @@ if __name__ == "__main__":
             board_renderer.draw(SCREEN)
             pause_button.draw(SCREEN)
             reset_button.draw(SCREEN)
-            select_algo_button.draw(SCREEN)
+            if not list_boardgame:
+                select_algo_button.draw(SCREEN)
             close_button.draw(SCREEN)
-
+            if list_boardgame and current_step_index >= len(list_boardgame):
+                next_level_button.draw(SCREEN)
         # Draw algorithm selection overlay
         if show_algo_selector:
             overlay = pygame.Surface((WIDTH, HEIGHT))
@@ -302,6 +319,7 @@ if __name__ == "__main__":
         if is_reset():
             should_load_level_flag = True
             start_solve_flag = False
+            list_boardgame = None
 
         # Check if close is triggered
         if is_close():
@@ -310,6 +328,7 @@ if __name__ == "__main__":
             selected_level = None
             board_renderer = None
             close_game_flag = False
+            list_boardgame = None
 
         # Refresh screen and cap frame rate
         pygame.display.flip()
