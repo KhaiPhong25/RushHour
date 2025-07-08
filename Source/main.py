@@ -14,6 +14,8 @@ WIDTH, HEIGHT = 800, 650
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Rush Hour")
 FONT = pygame.font.SysFont("", 30, bold = True)
+DETAIL_TITLE_FONT = pygame.font.SysFont("comicsansms", 40, bold=True)
+DETAIL_FONT = pygame.font.SysFont("comicsansms", 25, bold=False)
 
 # Load and scale background images
 background = pygame.image.load("Images/background.png")
@@ -41,6 +43,7 @@ close_game_flag = False
 reset_game_flag = False
 start_solve_flag = False
 should_load_level_flag = False
+execute_algorithm_flag = False
 last_vehicle_id = '#'
 
 # Variables to store user selections
@@ -52,6 +55,11 @@ board_renderer = None
 list_boardgame = None
 current_step_index = 0
 final_move = 1
+time_execution = 0
+peak_memory = 0
+expanded_nodes = 0
+total_moves = None
+total_cost = None
 
 # Toggle pause/resume and update icon
 def toggle_pause():
@@ -90,24 +98,41 @@ def select_algorithm():
 
 # Handle algorithm button selection and initiate solving
 def select_algorithm_callback(algo_func):
-    global current_solver, show_algo_selector, start_solve_flag, selected_algorithm, list_boardgame, current_step_index
+    global board_renderer
+    SCREEN.fill('#000000')
+    board_renderer.draw(SCREEN)
+
+    overlay = pygame.Surface((WIDTH, HEIGHT))
+    overlay.set_alpha(220)
+    overlay.fill((0, 0, 0))
+    SCREEN.blit(overlay, (0, 0))
+
+    waiting_text_surface = FONT.render("Searching...", True, (255, 255, 255))
+    waiting_text_surface = waiting_text_surface.convert_alpha()
+    waiting_text_rect = waiting_text_surface.get_rect(center = (398, 300))
+
+    SCREEN.blit(waiting_text_surface, waiting_text_rect)
+    pygame.display.flip()
+
+    global current_solver, execute_algorithm_flag, selected_algorithm, list_boardgame, current_step_index, show_algo_selector
     print(f"Selected algorithm: {algo_func.__name__}")
     current_solver = algo_func
     selected_algorithm = algo_func
     show_algo_selector = False
 
+    global time_execution, peak_memory, expanded_nodes, total_moves, total_cost
     # Run selected algorithm and store the board states
     if board_renderer:
         file_name = f"Map/gameboard{selected_level}.json"
         gameboard = helpFunctions.load_gameboard(file_name)
 
         if algo_func.__name__ == 'dls_algorithm':
-            list_boardgame = current_solver(gameboard, config.MAX_LIMIT)
+            list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard, config.MAX_LIMIT)
         else:
-            list_boardgame = current_solver(gameboard)
+            list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard)
 
         current_step_index = 0
-        start_solve_flag = True
+        execute_algorithm_flag = True
 
 def next_level():
     global selected_level
@@ -119,6 +144,10 @@ def next_level():
     global list_boardgame
     list_boardgame = None
 
+def view_step():
+    global execute_algorithm_flag, start_solve_flag 
+    start_solve_flag = True
+    execute_algorithm_flag = False
 # Create buttons for selecting search algorithms
 algorithm_buttons = []
 def create_algorithm_buttons(font):
@@ -177,6 +206,7 @@ pause_button = button.Button(660, 20, 50, 50, "", toggle_pause, FONT, "Images/Bu
 reset_button = button.Button(600, 20, 50, 50, "", reset_game, FONT, "Images/Buttons/reset.png")
 select_algo_button = button.Button(540, 20, 50, 50, "", select_algorithm, FONT, "Images/Buttons/choice.png")
 next_level_button = button.Button(540, 20, 50, 50, "", next_level, FONT, "Images/Buttons/nextlevel.png")
+view_step_button = button.Button(310, 500, 100, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
 
 # Generate level selection buttons (1-10)
 def create_level_buttons(font, callback):
@@ -200,6 +230,35 @@ def on_level_selected(level):
     selected_level = level
     state_game_flag = True
     should_load_level_flag = True
+
+def print_details():
+    overlay = pygame.Surface((WIDTH, HEIGHT))
+    overlay.set_alpha(200)
+    overlay.fill((0, 0, 0))
+    SCREEN.blit(overlay, (0, 0))
+
+    title_text = DETAIL_TITLE_FONT.render("DETAILS", True, "#ffffff")
+    time_execution_text = DETAIL_FONT.render(f"Total time: {time_execution:.2f} seconds", True, "#ffffff")
+    peak_memory_text = DETAIL_FONT.render(f"Peak memory usage: {peak_memory / (1024 * 1024):.2f} MB", True, "#ffffff")
+    expanded_nodes_text = DETAIL_FONT.render(f"Total expanded nodes: {expanded_nodes}", True, "#ffffff")
+    total_moves_text = DETAIL_FONT.render(f"Total moves: {total_moves}", True, "#ffffff")
+    total_cost_text = DETAIL_FONT.render(f"Total cost: {total_cost}", True, "#ffffff")
+
+    title_text_rect = (310, 100)
+    time_execution_text_rect = (270, 200)
+    peak_memory_text_rect = (270, 250)
+    expanded_nodes_text_rect = (270, 300)
+    total_moves_text_rect = (270, 350)
+    total_cost_text_rect = (270, 400)
+
+    SCREEN.blit(title_text, title_text_rect)
+    SCREEN.blit(time_execution_text, time_execution_text_rect)
+    SCREEN.blit(peak_memory_text, peak_memory_text_rect)
+    SCREEN.blit(expanded_nodes_text, expanded_nodes_text_rect)
+    SCREEN.blit(total_moves_text, total_moves_text_rect)
+    SCREEN.blit(total_cost_text, total_cost_text_rect)
+
+    view_step_button.draw(SCREEN)
 
 # Create all level buttons
 level_buttons = create_level_buttons(FONT, on_level_selected)
@@ -233,7 +292,7 @@ if __name__ == "__main__":
                     for btn in algorithm_buttons:
                         btn.handle_event(event)
 
-            if not show_algo_selector:
+            if not show_algo_selector and not execute_algorithm_flag:
                 pause_button.handle_event(event)
                 reset_button.handle_event(event)
                 if not list_boardgame:
@@ -241,6 +300,9 @@ if __name__ == "__main__":
                 if list_boardgame and current_step_index >= len(list_boardgame):
                     next_level_button.handle_event(event)
                 close_button.handle_event(event)
+
+            if execute_algorithm_flag:
+                view_step_button.handle_event(event)
 
         # Show welcome screen with fading text
         if not state_game_flag:
@@ -314,6 +376,9 @@ if __name__ == "__main__":
             close_algo_selector_button.draw(SCREEN)
             for btn in algorithm_buttons:
                 btn.draw(SCREEN)
+
+        if execute_algorithm_flag:
+            print_details()
 
         # Check if reset is triggered
         if is_reset():
