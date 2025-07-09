@@ -47,6 +47,10 @@ class Button:
             if self.hovered and self.callback:
                 self.callback()  # Trigger callback if clicked
 
+    def update(self):
+        mouse_pos = pygame.mouse.get_pos()
+        self.hovered = self.rect.collidepoint(mouse_pos)
+
     # Update the button's icon dynamically
     def set_icon(self, icon_path):
         icon = pygame.image.load(icon_path).convert_alpha()

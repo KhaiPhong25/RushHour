@@ -5,8 +5,9 @@ import button
 import config
 import boardRenderer
 import helpFunctions
+from vehicle import Vehicle
+from gameboard import Gameboard
 from searchAlgorithms import bfs_algorithm, dls_algorithm, A_star_algorithm, ucs_algorithm
-import time
 
 # Initialize PyGame and configure screen
 pygame.init()
@@ -47,6 +48,7 @@ reset_game_flag = False
 start_solve_flag = False
 should_load_level_flag = False
 execute_algorithm_flag = False
+animation_finished_flag = False
 last_vehicle_id = '#'
 
 # Variables to store user selections
@@ -57,7 +59,7 @@ show_algo_selector = False
 board_renderer = None
 list_boardgame = None
 current_step_index = 0
-final_move = 1
+final_move = 0
 time_execution = 0
 peak_memory = 0
 expanded_nodes = 0
@@ -131,6 +133,7 @@ def select_algorithm_callback(algo_func):
 
         if algo_func.__name__ == 'dls_algorithm':
             list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard, config.MAX_LIMIT)
+
         else:
             list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard)
 
@@ -151,6 +154,7 @@ def view_step():
     global execute_algorithm_flag, start_solve_flag 
     start_solve_flag = True
     execute_algorithm_flag = False
+
 # Create buttons for selecting search algorithms
 algorithm_buttons = []
 def create_algorithm_buttons(font):
@@ -270,6 +274,26 @@ def on_level_selected(level):
 # Create all level buttons
 level_buttons = create_level_buttons(FONT, on_level_selected)
 
+def interpolate_vehicle_state(v_from, v_to, progress):
+    if v_from.orientation == 'H':
+        new_x = v_from.x + (v_to.x - v_from.x) * progress
+        new_y = v_from.y
+    else:
+        new_x = v_from.x
+        new_y = v_from.y + (v_to.y - v_from.y) * progress
+
+    return Vehicle(v_from.id, new_x, new_y, v_from.orientation, v_from.length)
+
+def interpolate_gameboard(state1, state2, progress):
+    interpolated_vehicles = []
+    for v1 in state1.vehicles:
+        v2 = next((v for v in state2.vehicles if v.id == v1.id), None)
+        if v2:
+            interpolated_vehicles.append(interpolate_vehicle_state(v1, v2, progress))
+        else:
+            interpolated_vehicles.append(v1)
+    return Gameboard(6, 6, interpolated_vehicles)
+
 # Main game loop
 if __name__ == "__main__":
     clock = pygame.time.Clock()
@@ -290,24 +314,24 @@ if __name__ == "__main__":
                 for btn in level_buttons:
                     btn.handle_event(event)
 
-            if show_algo_selector:
-                # if not paused_game_flag:
-                #     toggle_pause()
-                
-                # else:    
-                    close_algo_selector_button.handle_event(event)
-                    for btn in algorithm_buttons:
-                        btn.handle_event(event)
+            if show_algo_selector:   
+                close_algo_selector_button.handle_event(event)
+                for btn in algorithm_buttons:
+                    btn.handle_event(event)
 
             if not show_algo_selector and not execute_algorithm_flag:
                 pause_button.handle_event(event)
                 reset_button.handle_event(event)
+
                 if list_boardgame:
                     information_button.handle_event(event)
+
                 if not list_boardgame:
                     select_algo_button.handle_event(event)
+
                 if list_boardgame and current_step_index >= len(list_boardgame) and selected_level < 10:
                     next_level_button.handle_event(event)
+
                 close_button.handle_event(event)                
 
             if execute_algorithm_flag:
@@ -350,19 +374,125 @@ if __name__ == "__main__":
 
             # Step-by-step animation if not paused
             if start_solve_flag and list_boardgame and not paused_game_flag:
-                if current_step_index < len(list_boardgame):
-                    board_renderer.update(list_boardgame[current_step_index])
-                    current_step_index += 1
-                    pygame.time.delay(150)
+                # Animate interpolation between current and next state
+                if current_step_index < len(list_boardgame) - 1:
+                    state1 = list_boardgame[current_step_index]
+                    state2 = list_boardgame[current_step_index + 1]
 
+                    for i in range(24):
+                        progress = i / 24
+                        interpolated = interpolate_gameboard(state1, state2, progress)
+
+                        board_renderer.update(interpolated)
+                        SCREEN.blit(background, (0, 0))
+                        board_renderer.draw(SCREEN)
+                        SCREEN.blit(show_level, (10, 100))
+                        level_text = pygame.font.SysFont("comicsansms", 30, bold=True).render(f"Level {selected_level}", True, "#000000")
+                        SCREEN.blit(level_text, (40, 135))
+
+                        # Handle events during animation
+                        for event in pygame.event.get():
+                            pause_button.handle_event(event)
+                            reset_button.handle_event(event)
+                            close_button.handle_event(event)
+                            information_button.handle_event(event)
+
+                            if not list_boardgame:
+                                select_algo_button.handle_event(event)
+
+                            if list_boardgame and current_step_index >= len(list_boardgame):
+                                next_level_button.handle_event(event)
+
+                        # Update hover effects 
+                        pause_button.update()
+                        reset_button.update()
+                        close_button.update()
+                        information_button.update()
+
+                        if not list_boardgame:
+                            select_algo_button.update()
+
+                        if list_boardgame and current_step_index >= len(list_boardgame):
+                            next_level_button.update()
+
+                        # Redraw interface
+                        pause_button.draw(SCREEN)
+                        reset_button.draw(SCREEN)
+                        close_button.draw(SCREEN)
+                        information_button.draw(SCREEN)
+
+                        if not list_boardgame:
+                            select_algo_button.draw(SCREEN)
+
+                        if list_boardgame and current_step_index >= len(list_boardgame):
+                            next_level_button.draw(SCREEN)
+
+                        pygame.display.flip()
+                        clock.tick(60)
+
+                    current_step_index += 1
+
+                # Clamp index at end of list
                 else:
-                    # Final animation for winning condition
-                    if final_move < 6:
-                        board_renderer.update_main_vehicle_final_animation(list_boardgame[current_step_index - 1], final_move)
-                        final_move += 1
-                        pygame.time.delay(120)
+                    current_step_index = len(list_boardgame)
+                    animation_finished_flag = True
+                
+                if animation_finished_flag == True:
+                    if final_move < 4:
+                        for i in range(60):
+                            if list_boardgame and len(list_boardgame) > 0:
+                                final_move += 1/480
+                                board_renderer.update_main_vehicle_final_animation(list_boardgame[-1], final_move)
+
+                            SCREEN.blit(background, (0, 0))
+                            board_renderer.draw(SCREEN)
+                            SCREEN.blit(show_level, (10, 100))
+                            level_text = pygame.font.SysFont("comicsansms", 30, bold=True).render(f"Level {selected_level}", True, "#000000")
+                            SCREEN.blit(level_text, (40, 135))
+                            
+                            # Handle events during animation
+                            for event in pygame.event.get():
+                                pause_button.handle_event(event)
+                                reset_button.handle_event(event)
+                                close_button.handle_event(event)
+                                information_button.handle_event(event)
+
+                                if not list_boardgame:
+                                    select_algo_button.handle_event(event)
+
+                                if list_boardgame and current_step_index >= len(list_boardgame):
+                                    next_level_button.handle_event(event)
+
+                            # Update hover effects 
+                            pause_button.update()
+                            reset_button.update()
+                            close_button.update()
+                            information_button.update()
+
+                            if not list_boardgame:
+                                select_algo_button.update()
+
+                            if list_boardgame and current_step_index >= len(list_boardgame):
+                                next_level_button.update()
+
+                            # Redraw interface
+                            pause_button.draw(SCREEN)
+                            reset_button.draw(SCREEN)
+                            close_button.draw(SCREEN)
+                            information_button.draw(SCREEN)
+
+                            if not list_boardgame:
+                                select_algo_button.draw(SCREEN)
+
+                            if list_boardgame and current_step_index >= len(list_boardgame):
+                                next_level_button.draw(SCREEN)
+
+                            pygame.display.flip()
+                            clock.tick(60)
+
                     else:
-                        final_move = 1
+                        animation_finished_flag = False
+                        final_move = 0
 
             # Draw board and control buttons
             board_renderer.draw(SCREEN)
@@ -371,13 +501,19 @@ if __name__ == "__main__":
             SCREEN.blit(level_text, (40, 135))
             pause_button.draw(SCREEN)
             reset_button.draw(SCREEN)
+
             if list_boardgame:
                 information_button.draw(SCREEN)
+
             if not list_boardgame:
                 select_algo_button.draw(SCREEN)
+
             close_button.draw(SCREEN)
-            if list_boardgame and current_step_index >= len(list_boardgame) and selected_level < 10:
-                next_level_button.draw(SCREEN)
+
+            if list_boardgame and current_step_index >= len(list_boardgame): 
+                if selected_level is not None and selected_level < 10:
+                    next_level_button.draw(SCREEN)
+
         # Draw algorithm selection overlay
         if show_algo_selector:
             overlay = pygame.Surface((WIDTH, HEIGHT))
