@@ -27,6 +27,9 @@ level_background = pygame.transform.scale(level_background, (WIDTH, HEIGHT))
 select_algo_background = pygame.image.load("Images/Algorithms/select_algo_background.png")
 select_algo_background = pygame.transform.scale(select_algo_background, (WIDTH - 350, HEIGHT - 450))
 
+show_level = pygame.image.load("Images/showlevel.png")
+show_level = pygame.transform.scale(show_level, (WIDTH / 4, HEIGHT / 4))
+
 # Set up welcome message with fade effect
 text_surface = FONT.render("Click on the screen to start the game", True, (255, 255, 255))
 text_surface = text_surface.convert_alpha()
@@ -199,39 +202,10 @@ def hide_algo_selector():
     print("Close algorithms selector pressed")
     show_algo_selector = False
 
-# Create control buttons (pause, reset, close, algorithm selection)
-close_algo_selector_button = button.Button(590, 210, 50, 50, "", lambda: hide_algo_selector(), FONT, "Images/Algorithms/close_algo_selector.png")
-close_button = button.Button(720, 20, 50, 50, "", close_game, FONT, "Images/Buttons/close.png")
-pause_button = button.Button(660, 20, 50, 50, "", toggle_pause, FONT, "Images/Buttons/pause.png")
-reset_button = button.Button(600, 20, 50, 50, "", reset_game, FONT, "Images/Buttons/reset.png")
-select_algo_button = button.Button(540, 20, 50, 50, "", select_algorithm, FONT, "Images/Buttons/choice.png")
-next_level_button = button.Button(540, 20, 50, 50, "", next_level, FONT, "Images/Buttons/nextlevel.png")
-view_step_button = button.Button(310, 500, 100, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
-
-# Generate level selection buttons (1-10)
-def create_level_buttons(font, callback):
-    buttons = []
-    start_x, start_y, width, height, gap, columns = 255, 295, 50, 50, 60, 5
-
-    for i in range(10):
-        level_number = i + 1
-        x = start_x + (i % columns) * gap
-        y = start_y + (i // columns) * gap
-        btn = button.Button(x, y, width, height, "", lambda lv = level_number: callback(lv),
-                            font, icon_path = f"Images/Levels/level{level_number}.png")
-        buttons.append(btn)
-
-    return buttons
-
-# Handle level selection
-def on_level_selected(level):
-    global selected_level, state_game_flag, should_load_level_flag
-    print(f"Selected Level: {level}")
-    selected_level = level
-    state_game_flag = True
-    should_load_level_flag = True
-
 def print_details():
+    global execute_algorithm_flag, start_solve_flag
+    execute_algorithm_flag = True
+    start_solve_flag = False
     overlay = pygame.Surface((WIDTH, HEIGHT))
     overlay.set_alpha(200)
     overlay.fill((0, 0, 0))
@@ -259,6 +233,39 @@ def print_details():
     SCREEN.blit(total_cost_text, total_cost_text_rect)
 
     view_step_button.draw(SCREEN)
+
+# Create control buttons (pause, reset, close, algorithm selection)
+close_algo_selector_button = button.Button(590, 210, 50, 50, "", lambda: hide_algo_selector(), FONT, "Images/Algorithms/close_algo_selector.png")
+close_button = button.Button(720, 20, 50, 50, "", close_game, FONT, "Images/Buttons/close.png")
+pause_button = button.Button(660, 20, 50, 50, "", toggle_pause, FONT, "Images/Buttons/pause.png")
+reset_button = button.Button(600, 20, 50, 50, "", reset_game, FONT, "Images/Buttons/reset.png")
+select_algo_button = button.Button(540, 20, 50, 50, "", select_algorithm, FONT, "Images/Buttons/choice.png")
+next_level_button = button.Button(540, 20, 50, 50, "", next_level, FONT, "Images/Buttons/nextlevel.png")
+view_step_button = button.Button(310, 500, 100, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
+information_button = button.Button(20, 20, 50, 50, "", print_details, FONT, "Images/Buttons/information.png")
+
+# Generate level selection buttons (1-10)
+def create_level_buttons(font, callback):
+    buttons = []
+    start_x, start_y, width, height, gap, columns = 255, 295, 50, 50, 60, 5
+
+    for i in range(10):
+        level_number = i + 1
+        x = start_x + (i % columns) * gap
+        y = start_y + (i // columns) * gap
+        btn = button.Button(x, y, width, height, "", lambda lv = level_number: callback(lv),
+                            font, icon_path = f"Images/Levels/level{level_number}.png")
+        buttons.append(btn)
+
+    return buttons
+
+# Handle level selection
+def on_level_selected(level):
+    global selected_level, state_game_flag, should_load_level_flag
+    print(f"Selected Level: {level}")
+    selected_level = level
+    state_game_flag = True
+    should_load_level_flag = True
 
 # Create all level buttons
 level_buttons = create_level_buttons(FONT, on_level_selected)
@@ -295,11 +302,13 @@ if __name__ == "__main__":
             if not show_algo_selector and not execute_algorithm_flag:
                 pause_button.handle_event(event)
                 reset_button.handle_event(event)
+                if list_boardgame:
+                    information_button.handle_event(event)
                 if not list_boardgame:
                     select_algo_button.handle_event(event)
-                if list_boardgame and current_step_index >= len(list_boardgame):
+                if list_boardgame and current_step_index >= len(list_boardgame) and selected_level < 10:
                     next_level_button.handle_event(event)
-                close_button.handle_event(event)
+                close_button.handle_event(event)                
 
             if execute_algorithm_flag:
                 view_step_button.handle_event(event)
@@ -328,6 +337,7 @@ if __name__ == "__main__":
 
             SCREEN.blit(background, (0, 0))
             board_renderer.draw(SCREEN)
+            SCREEN.blit(show_level, (WIDTH - 150, 100))
             pause_button.draw(SCREEN)
             reset_button.draw(SCREEN)
             select_algo_button.draw(SCREEN)
@@ -356,12 +366,17 @@ if __name__ == "__main__":
 
             # Draw board and control buttons
             board_renderer.draw(SCREEN)
+            SCREEN.blit(show_level, (10, 100))
+            level_text = pygame.font.SysFont("comicsansms", 30, bold= True).render(f"Level {selected_level}", True, "#000000")
+            SCREEN.blit(level_text, (40, 135))
             pause_button.draw(SCREEN)
             reset_button.draw(SCREEN)
+            if list_boardgame:
+                information_button.draw(SCREEN)
             if not list_boardgame:
                 select_algo_button.draw(SCREEN)
             close_button.draw(SCREEN)
-            if list_boardgame and current_step_index >= len(list_boardgame):
+            if list_boardgame and current_step_index >= len(list_boardgame) and selected_level < 10:
                 next_level_button.draw(SCREEN)
         # Draw algorithm selection overlay
         if show_algo_selector:

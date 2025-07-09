@@ -86,17 +86,6 @@ def bfs_algorithm(gameboard: Gameboard):
     queue.append(gameboard)
     visited[gameboard] = (gameboard, None)
 
-    # If the start state is already solved, return the solution path
-    if gameboard.has_solved():
-        end = time.time()
-        _, peak = tracemalloc.get_traced_memory()
-        print(f'Total runtime of the solution is {end - start:.2f} seconds')
-        print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
-        print(f'Total expanded nodes is {expanded_nodes} nodes')
-        tracemalloc.stop()
-
-        return helpFunctions.trace_back_solution(visited, gameboard, gameboard)
-
     # While there are states to explore in the queue
     while queue:
         # Get the current state from the queue and increase the expanded nodes count
@@ -156,9 +145,13 @@ def ucs_algorithm(game_board: Gameboard):
     frontier.put((0, node_counter, game_board))
     visited[game_board] = (0, game_board)
     
-    while frontier:
+    while not frontier.empty():
         # Get the state with the lowest cost
         current_cost, _, current_board = frontier.get()
+
+        # if current_board in visited and current_cost > visited[current_board][0]:
+        #     continue
+        
         expanded_nodes += 1
         
         # If we reach the goal state i.e. solved, return the path
