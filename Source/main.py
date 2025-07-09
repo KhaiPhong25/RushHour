@@ -306,7 +306,7 @@ if __name__ == "__main__":
                     information_button.handle_event(event)
                 if not list_boardgame:
                     select_algo_button.handle_event(event)
-                if list_boardgame and current_step_index >= len(list_boardgame) and selected_level <= 10:
+                if list_boardgame and current_step_index >= len(list_boardgame) and selected_level < 10:
                     next_level_button.handle_event(event)
                 close_button.handle_event(event)                
 
