@@ -24,4 +24,4 @@ pip install pygame
 ```
 
 ## How to run the application
-Run the main.py file via the Python exstension on VS Code. If you want to open the `main.py` file by using  `python main.py` command in the Terminal, you will have put the Images and Map folders to the Source folder first since the command only traces the files from the working directory i.e., the Source folder.
+Run the main.py file via the Python extension on VS Code. If you want to open the `main.py` file by using  `python main.py` command in the Terminal, you will have put the Images and Map folders to the Source folder first since the command only traces the files from the working directory i.e., the Source folder.
