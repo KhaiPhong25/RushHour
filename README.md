@@ -24,10 +24,11 @@ pip install pygame
 ```
 
 ## How to run the application
-**Method 1 (if you are using VS Code):**
+
+## Method 1 (if you are using VS Code):
 Run the main.py file via the Python extension in VS Code. 
 
-**Method 2 (using the Terminal):**
+## Method 2 (using the Terminal):
 Run the `main.py` file by using the `python main.py` command in the Terminal.
 
 NB: Make sure to change the directory to the Source folder first (such as typing `cd Source` after cloning the repository), then copy the Images and Map folders to the Source folder since the command only traces the files from the working directory i.e., the Source folder.
