@@ -149,8 +149,8 @@ def ucs_algorithm(game_board: Gameboard):
         # Get the state with the lowest cost
         current_cost, _, current_board = frontier.get()
 
-        # if current_board in visited and current_cost > visited[current_board][0]:
-        #     continue
+        if current_board in visited and current_cost > visited[current_board][0]:
+            continue
         
         expanded_nodes += 1
         
@@ -193,6 +193,7 @@ def ucs_algorithm(game_board: Gameboard):
     print(f'Peak memory usage is {peak / (1024.0 * 1024.0):.2f} MB')
     print(f'Total expanded nodes is {expanded_nodes} nodes')
     
+    tracemalloc.stop()
     # If no solution is found, return None
     return None, end-start, peak, expanded_nodes, None, None
 
@@ -217,7 +218,7 @@ def A_star_algorithm(game_board):
     visited = {} # Dictionary to track visited states and their priorities
 
     # Calculate initial heuristic (number of vehicles blocking the target vehicle)
-    heuristic_value_root = helpFunctions.number_blocking_vehicle(game_board)
+    heuristic_value_root = helpFunctions.heuristic_blocking_chain(game_board)
 
     # Add initial state to frontier
     frontier.put((heuristic_value_root, node_counter, game_board))
@@ -229,13 +230,14 @@ def A_star_algorithm(game_board):
         num_expanded_node += 1
 
         # Subtract heuristic to get actual path cost (g) from f score
-        current_priority -= helpFunctions.number_blocking_vehicle(current_board)
+        current_priority -= helpFunctions.heuristic_blocking_chain(current_board)
 
         # Check if current state is the solution
         if current_board.has_solved():
             end_time = time.time()
             _, peak = tracemalloc.get_traced_memory()
 
+            tracemalloc.stop()
             path = helpFunctions.trace_back_solution(visited, game_board, current_board)
             return path, end_time-start_time, peak, num_expanded_node, len(path), current_priority
         
@@ -253,7 +255,7 @@ def A_star_algorithm(game_board):
                     break
 
             # Calculate new f score (f = g + h)
-            new_priority += helpFunctions.number_blocking_vehicle(new_game_board)
+            new_priority += helpFunctions.heuristic_blocking_chain(new_game_board)
 
             # Check if this state is new or has better priority than previous visit
             if new_game_board not in visited or new_priority < visited[new_game_board][0]:
@@ -264,10 +266,8 @@ def A_star_algorithm(game_board):
     # if no solution is found, return None
     end_time = time.time()
     _, peak = tracemalloc.get_traced_memory()
-    print(f"Total runtime of the solution is {end_time - start_time:.2f} seconds")
-    print(f"Peak memory usage is {peak / (1024 * 1024):.2f} MB")
-    print(f"Total expanded node is {num_expanded_node} nodes")
 
+    tracemalloc.stop()
     return None, end_time-start_time, peak, num_expanded_node, None, None
 
 # test case
