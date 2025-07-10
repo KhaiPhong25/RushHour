@@ -272,7 +272,7 @@ pause_button = button.Button(660, 20, 50, 50, "", toggle_pause, FONT, "Images/Bu
 reset_button = button.Button(600, 20, 50, 50, "", reset_game, FONT, "Images/Buttons/reset.png")
 select_algo_button = button.Button(540, 20, 50, 50, "", select_algorithm, FONT, "Images/Buttons/choice.png")
 next_level_button = button.Button(540, 20, 50, 50, "", next_level, FONT, "Images/Buttons/nextlevel.png")
-view_step_button = button.Button(360, 500, 100, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
+view_step_button = button.Button(360, 500, 50, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
 information_button = button.Button(20, 20, 50, 50, "", print_details, FONT, "Images/Buttons/information.png")
 
 # Generate level selection buttons (1-10)
