@@ -270,17 +270,3 @@ def A_star_algorithm(game_board):
     tracemalloc.stop()
     return None, end_time-start_time, peak, num_expanded_node, None, None
 
-# test case
-filename = "Map/gameboard1.json"
-gameboard = helpFunctions.load_gameboard(filename)
-print(gameboard)
-print(gameboard.vehicles)
-print('\n \n')
-#A_star_algorithm(gameboard)
-#ids_algorithm(gameboard, 10000)
-#print(len(bfs_algorithm(gameboard)))
-#helpFunctions.print_solution_path(bfs_algorithm(gameboard))
-#ucs_algorithm(gameboard)
-#helpFunctions.print_solution_path(dls_algorithm(gameboard, config.MAX_LIMIT))
-#print(ucs_algorithm(gameboard))
-#helpFunctions.print_solution_path(bfs_algorithm(gameboard))

@@ -111,10 +111,3 @@ def print_solution_path(path):
         print('\n \n')
 
     print(len(path))
-
-# In ra để check Gameboard
-# filename = "Map/gameboard3.json"
-# gameboard = load_gameboard(filename)
-# print(gameboard)
-# print (gameboard.vehicles)
-# print(number_blocking_vehicle(gameboard))
