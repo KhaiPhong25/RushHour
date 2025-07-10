@@ -71,7 +71,6 @@ total_cost = None
 # Toggle pause/resume and update icon
 def toggle_pause():
     global paused_game_flag
-    print("Pause/Play game pressed")
     paused_game_flag = not paused_game_flag
     pause_button.set_icon("Images/Buttons/play.png" if paused_game_flag else "Images/Buttons/pause.png")
 
@@ -84,7 +83,6 @@ def is_paused():
 def reset_game():
     global reset_game_flag, should_load_level_flag, no_solution_flag, no_solution_time
     global current_step_index, final_move, animation_finished_flag, list_boardgame
-    print("Reset game pressed")
     reset_game_flag = True
     should_load_level_flag = True
     no_solution_flag = False
@@ -108,7 +106,6 @@ def is_reset():
 # Display algorithm selection overlay
 def select_algorithm():
     global show_algo_selector
-    print("Algorithms selector pressed")
     show_algo_selector = True
 
 # Handle algorithm button selection and initiate solving
@@ -150,7 +147,6 @@ def select_algorithm_callback(algo_func):
             list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard)
 
         if not list_boardgame or len(list_boardgame) == 0:
-            print("No solution found.")
             global no_solution_flag, no_solution_time
             no_solution_flag = True
             no_solution_time = pygame.time.get_ticks()
@@ -214,7 +210,6 @@ create_algorithm_buttons(FONT)
 # Close the game and reset relevant flags
 def close_game():
     global state_game_flag, game_started_flag, close_game_flag, paused_game_flag, selected_level, no_solution_time
-    print("Close button pressed")
     close_game_flag = True
     state_game_flag = False
     game_started_flag = False
@@ -237,7 +232,6 @@ def is_close():
 # Close algorithm selector dialog
 def hide_algo_selector():
     global show_algo_selector
-    print("Close algorithms selector pressed")
     show_algo_selector = False
 
 def print_details():
@@ -300,7 +294,6 @@ def create_level_buttons(font, callback):
 # Handle level selection
 def on_level_selected(level):
     global selected_level, state_game_flag, should_load_level_flag
-    print(f"Selected Level: {level}")
     selected_level = level
     state_game_flag = True
     should_load_level_flag = True
