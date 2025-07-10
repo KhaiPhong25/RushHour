@@ -1,79 +1,86 @@
 [
     {
         "id": "#",
-        "x": 1,
+        "x": 2,
         "y": 2,
         "orientation": "H",
         "length": 2
     },
     {
         "id": "A",
-        "x": 4,
+        "x": 0,
         "y": 0,
-        "orientation": "V",
-        "length": 3
+        "orientation": "H",
+        "length": 2
     },
     {
         "id": "B",
-        "x": 0,
+        "x": 3,
+        "y": 0,
+        "orientation": "V",
+        "length": 2
+    },
+    {
+        "id": "C",
+        "x": 4,
         "y": 1,
         "orientation": "H",
         "length": 2
     },
     {
-        "id": "C",
-        "x": 5,
+        "id": "D",
+        "x": 1,
         "y": 1,
         "orientation": "V",
         "length": 2
     },
     {
-        "id": "D",
+        "id": "E",
         "x": 0,
         "y": 2,
         "orientation": "V",
         "length": 2
     },
     {
-        "id": "E",
-        "x": 2,
-        "y": 3,
-        "orientation": "V",
-        "length": 2
-    },
-    {
         "id": "F",
-        "x": 3,
-        "y": 3,
-        "orientation": "H",
+        "x": 4,
+        "y": 2,
+        "orientation": "V",
         "length": 2
     },
     {
         "id": "G",
         "x": 5,
-        "y": 3,
+        "y": 2,
         "orientation": "V",
         "length": 2
     },
     {
         "id": "H",
-        "x": 0,
-        "y": 4,
+        "x": 1,
+        "y": 3,
         "orientation": "H",
         "length": 2
     },
     {
         "id": "I",
-        "x": 0,
-        "y": 5,
-        "orientation": "H",
-        "length": 3
+        "x": 2,
+        "y": 4,
+        "orientation": "V",
+        "length": 2
     },
     {
         "id": "J",
         "x": 3,
         "y": 4,
-        "orientation": "V",
+        "orientation": "H",
+        "length": 2
+    },
+    {
+        "id": "K",
+        "x": 0,
+        "y": 5,
+        "orientation": "H",
         "length": 2
     }
 ]
