@@ -129,7 +129,6 @@ def select_algorithm_callback(algo_func):
     pygame.display.flip()
 
     global current_solver, execute_algorithm_flag, selected_algorithm, list_boardgame, current_step_index, show_algo_selector
-    print(f"Selected algorithm: {algo_func.__name__}")
     current_solver = algo_func
     selected_algorithm = algo_func
     show_algo_selector = False
