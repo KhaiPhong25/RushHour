@@ -1,5 +1,5 @@
 # Rush Hour application
-![Rush Hour GUI](.\Pictures\Screenshots\RushHour.png)
+![Rush Hour GUI](./Screenshots/RushHour.png "Rush Hour GUI")
 
 ## Overview
 
