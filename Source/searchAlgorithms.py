@@ -115,9 +115,6 @@ def bfs_algorithm(gameboard: Gameboard):
     # If no solution is found, return None and print statistics
     end = time.time()
     _, peak = tracemalloc.get_traced_memory()
-    print(f'Total runtime of the solution is {end - start:.2f} seconds')
-    print(f'Peak memory usage is {peak / (1024 * 1024):.2f} MB')
-    print(f'Total expanded nodes is {expanded_nodes} nodes')
     tracemalloc.stop()
     
     return None, end-start, peak, expanded_nodes, None, None
@@ -187,11 +184,6 @@ def ucs_algorithm(game_board: Gameboard):
     # Final statistics for running time and peak memory usage
     end = time.time()
     current, peak = tracemalloc.get_traced_memory()
-    
-    # Display the statistics
-    print(f'Total runtime of the solution is {end - start:.2f} seconds')
-    print(f'Peak memory usage is {peak / (1024.0 * 1024.0):.2f} MB')
-    print(f'Total expanded nodes is {expanded_nodes} nodes')
     
     tracemalloc.stop()
     # If no solution is found, return None
