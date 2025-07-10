@@ -14,9 +14,9 @@ pygame.init()
 WIDTH, HEIGHT = 800, 650
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Rush Hour")
-FONT = pygame.font.SysFont("", 30, bold = True)
-DETAIL_TITLE_FONT = pygame.font.SysFont("comicsansms", 40, bold=True)
-DETAIL_FONT = pygame.font.SysFont("comicsansms", 25, bold=False)
+FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 20)
+DETAIL_TITLE_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 60)
+DETAIL_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 25)
 
 # Load and scale background images
 background = pygame.image.load("Images/background.png")
@@ -27,9 +27,6 @@ level_background = pygame.transform.scale(level_background, (WIDTH, HEIGHT))
 
 select_algo_background = pygame.image.load("Images/Algorithms/select_algo_background.png")
 select_algo_background = pygame.transform.scale(select_algo_background, (WIDTH - 350, HEIGHT - 450))
-
-show_level = pygame.image.load("Images/showlevel.png")
-show_level = pygame.transform.scale(show_level, (WIDTH / 4, HEIGHT / 4))
 
 # Set up welcome message with fade effect
 text_surface = FONT.render("Click on the screen to start the game", True, (255, 255, 255))
@@ -49,10 +46,12 @@ start_solve_flag = False
 should_load_level_flag = False
 execute_algorithm_flag = False
 animation_finished_flag = False
+no_solution_flag = False
+no_solution_time = 0
 last_vehicle_id = '#'
 
 # Variables to store user selections
-selected_level = None
+selected_level = 0
 selected_algorithm = None
 current_solver = None
 show_algo_selector = False
@@ -80,10 +79,18 @@ def is_paused():
 
 # Trigger reset and reload level
 def reset_game():
-    global reset_game_flag, should_load_level_flag
+    global reset_game_flag, should_load_level_flag, no_solution_flag, no_solution_time
+    global current_step_index, final_move, animation_finished_flag, list_boardgame
     print("Reset game pressed")
     reset_game_flag = True
     should_load_level_flag = True
+    no_solution_flag = False
+    no_solution_time = 0
+
+    current_step_index = 0
+    final_move = 0
+    animation_finished_flag = False
+    list_boardgame = None
 
 # Check and reset reset flag
 def is_reset():
@@ -105,7 +112,9 @@ def select_algorithm():
 def select_algorithm_callback(algo_func):
     global board_renderer
     SCREEN.fill('#000000')
-    board_renderer.draw(SCREEN)
+
+    if board_renderer:
+        board_renderer.draw(SCREEN)
 
     overlay = pygame.Surface((WIDTH, HEIGHT))
     overlay.set_alpha(220)
@@ -133,12 +142,21 @@ def select_algorithm_callback(algo_func):
 
         if algo_func.__name__ == 'dls_algorithm':
             list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard, config.MAX_LIMIT)
-
+            
         else:
             list_boardgame, time_execution, peak_memory, expanded_nodes, total_moves, total_cost = current_solver(gameboard)
 
+        if not list_boardgame or len(list_boardgame) == 0:
+            print("No solution found.")
+            global no_solution_flag, no_solution_time
+            no_solution_flag = True
+            no_solution_time = pygame.time.get_ticks()
+            execute_algorithm_flag = False
+            return
+
         current_step_index = 0
         execute_algorithm_flag = True
+
 
 def next_level():
     global selected_level
@@ -174,6 +192,7 @@ def create_algorithm_buttons(font):
                 func_map = {"BFS": bfs_algorithm, "DLS": dls_algorithm, 
                             "A STAR": A_star_algorithm, "UCS": ucs_algorithm}
                 select_algorithm_callback(func_map[algo_name])
+
             return callback
 
         btn = button.Button(x, y, width, height, "", callback = make_callback(name),
@@ -186,13 +205,14 @@ create_algorithm_buttons(FONT)
 
 # Close the game and reset relevant flags
 def close_game():
-    global state_game_flag, game_started_flag, close_game_flag, paused_game_flag, selected_level
+    global state_game_flag, game_started_flag, close_game_flag, paused_game_flag, selected_level, no_solution_time
     print("Close button pressed")
     close_game_flag = True
     state_game_flag = False
     game_started_flag = False
     paused_game_flag = False
-    selected_level = None
+    selected_level = 0
+    no_solution_time = 0
     pause_button.set_icon("Images/Buttons/pause.png")
 
 # Check if close has been requested
@@ -245,7 +265,7 @@ pause_button = button.Button(660, 20, 50, 50, "", toggle_pause, FONT, "Images/Bu
 reset_button = button.Button(600, 20, 50, 50, "", reset_game, FONT, "Images/Buttons/reset.png")
 select_algo_button = button.Button(540, 20, 50, 50, "", select_algorithm, FONT, "Images/Buttons/choice.png")
 next_level_button = button.Button(540, 20, 50, 50, "", next_level, FONT, "Images/Buttons/nextlevel.png")
-view_step_button = button.Button(310, 500, 100, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
+view_step_button = button.Button(360, 500, 100, 50, "", view_step, FONT, "Images/Buttons/viewstep.png")
 information_button = button.Button(20, 20, 50, 50, "", print_details, FONT, "Images/Buttons/information.png")
 
 # Generate level selection buttons (1-10)
@@ -278,6 +298,7 @@ def interpolate_vehicle_state(v_from, v_to, progress):
     if v_from.orientation == 'H':
         new_x = v_from.x + (v_to.x - v_from.x) * progress
         new_y = v_from.y
+
     else:
         new_x = v_from.x
         new_y = v_from.y + (v_to.y - v_from.y) * progress
@@ -286,12 +307,16 @@ def interpolate_vehicle_state(v_from, v_to, progress):
 
 def interpolate_gameboard(state1, state2, progress):
     interpolated_vehicles = []
+
     for v1 in state1.vehicles:
         v2 = next((v for v in state2.vehicles if v.id == v1.id), None)
+
         if v2:
             interpolated_vehicles.append(interpolate_vehicle_state(v1, v2, progress))
+
         else:
             interpolated_vehicles.append(v1)
+
     return Gameboard(6, 6, interpolated_vehicles)
 
 # Main game loop
@@ -310,12 +335,13 @@ if __name__ == "__main__":
                     continue
 
             # Event handling based on game state
-            if state_game_flag and selected_level is None:
+            if state_game_flag and selected_level == 0:
                 for btn in level_buttons:
                     btn.handle_event(event)
 
             if show_algo_selector:   
                 close_algo_selector_button.handle_event(event)
+
                 for btn in algorithm_buttons:
                     btn.handle_event(event)
 
@@ -329,8 +355,9 @@ if __name__ == "__main__":
                 if not list_boardgame:
                     select_algo_button.handle_event(event)
 
-                if list_boardgame and current_step_index >= len(list_boardgame) and selected_level < 10:
-                    next_level_button.handle_event(event)
+                if list_boardgame and current_step_index >= len(list_boardgame):
+                        if selected_level != 0 and selected_level < 10:
+                            next_level_button.handle_event(event)
 
                 close_button.handle_event(event)                
 
@@ -341,19 +368,22 @@ if __name__ == "__main__":
         if not state_game_flag:
             SCREEN.blit(background, (0, 0))
             alpha += fade_speed
+
             if alpha >= 255 or alpha <= 0:
                 fade_speed = -fade_speed
+
             text_surface.set_alpha(alpha)
             SCREEN.blit(text_surface, text_rect)
 
         # Level selection screen
-        elif selected_level is None:
+        elif selected_level == 0:
             SCREEN.blit(level_background, (0, 0))
+
             for btn in level_buttons:
                 btn.draw(SCREEN)
 
         # Load level and render board
-        elif should_load_level_flag and selected_level is not None:
+        elif should_load_level_flag and selected_level != 0:
             file_name = f"Map/gameboard{selected_level}.json"
             gameboard = helpFunctions.load_gameboard(file_name)
             board_renderer = boardRenderer.BoardRenderer(gameboard, "Images/boardgame.png")
@@ -361,7 +391,12 @@ if __name__ == "__main__":
 
             SCREEN.blit(background, (0, 0))
             board_renderer.draw(SCREEN)
-            SCREEN.blit(show_level, (WIDTH - 150, 100))
+
+            if selected_level != 0:
+                level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {selected_level}", True, "#000000")
+                level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
+                SCREEN.blit(level_text, level_rect)
+
             pause_button.draw(SCREEN)
             reset_button.draw(SCREEN)
             select_algo_button.draw(SCREEN)
@@ -386,9 +421,10 @@ if __name__ == "__main__":
                         board_renderer.update(interpolated)
                         SCREEN.blit(background, (0, 0))
                         board_renderer.draw(SCREEN)
-                        SCREEN.blit(show_level, (10, 100))
-                        level_text = pygame.font.SysFont("comicsansms", 30, bold=True).render(f"Level {selected_level}", True, "#000000")
-                        SCREEN.blit(level_text, (40, 135))
+                        if selected_level != 0:
+                            level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {selected_level}", True, "#000000")
+                            level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
+                            SCREEN.blit(level_text, level_rect)
 
                         # Handle events during animation
                         for event in pygame.event.get():
@@ -446,9 +482,10 @@ if __name__ == "__main__":
 
                             SCREEN.blit(background, (0, 0))
                             board_renderer.draw(SCREEN)
-                            SCREEN.blit(show_level, (10, 100))
-                            level_text = pygame.font.SysFont("comicsansms", 30, bold=True).render(f"Level {selected_level}", True, "#000000")
-                            SCREEN.blit(level_text, (40, 135))
+                            if selected_level != 0:
+                                level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {selected_level}", True, "#000000")
+                                level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
+                                SCREEN.blit(level_text, level_rect)
                             
                             # Handle events during animation
                             for event in pygame.event.get():
@@ -496,9 +533,10 @@ if __name__ == "__main__":
 
             # Draw board and control buttons
             board_renderer.draw(SCREEN)
-            SCREEN.blit(show_level, (10, 100))
-            level_text = pygame.font.SysFont("comicsansms", 30, bold= True).render(f"Level {selected_level}", True, "#000000")
-            SCREEN.blit(level_text, (40, 135))
+            if selected_level != 0:
+                level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {selected_level}", True, "#000000")
+                level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
+                SCREEN.blit(level_text, level_rect)
             pause_button.draw(SCREEN)
             reset_button.draw(SCREEN)
 
@@ -511,7 +549,7 @@ if __name__ == "__main__":
             close_button.draw(SCREEN)
 
             if list_boardgame and current_step_index >= len(list_boardgame): 
-                if selected_level is not None and selected_level < 10:
+                if selected_level != 0 and selected_level < 10:
                     next_level_button.draw(SCREEN)
 
         # Draw algorithm selection overlay
@@ -525,10 +563,25 @@ if __name__ == "__main__":
             bg_y = (HEIGHT - select_algo_background.get_height()) // 2
             SCREEN.blit(select_algo_background, (bg_x, bg_y))
             close_algo_selector_button.draw(SCREEN)
+
             for btn in algorithm_buttons:
                 btn.draw(SCREEN)
 
-        if execute_algorithm_flag:
+        if no_solution_flag:
+            elapsed_time = pygame.time.get_ticks() - no_solution_time
+            if elapsed_time < 2000:
+                overlay = pygame.Surface((WIDTH, HEIGHT))
+                overlay.set_alpha(200)
+                overlay.fill((0, 0, 0))
+                SCREEN.blit(overlay, (0, 0))
+
+                no_solution_text = DETAIL_TITLE_FONT.render("NO SOLUTION", True, "#ff4444")
+                no_solution_rect = no_solution_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                SCREEN.blit(no_solution_text, no_solution_rect)
+            else:
+                no_solution_flag = False
+
+        elif execute_algorithm_flag:
             print_details()
 
         # Check if reset is triggered
@@ -541,7 +594,7 @@ if __name__ == "__main__":
         if is_close():
             should_load_level_flag = False
             start_solve_flag = False
-            selected_level = None
+            selected_level = 0
             board_renderer = None
             close_game_flag = False
             list_boardgame = None

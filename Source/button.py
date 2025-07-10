@@ -1,5 +1,4 @@
 import pygame
-import colors
 
 # Button class represents a clickable UI button with optional icon or text
 class Button:
@@ -34,7 +33,7 @@ class Button:
 
         elif self.text and self.font:
             # Render text if no icon is provided
-            txt_surf = self.font.render(self.text, True, colors.BLACK)
+            txt_surf = self.font.render(self.text, True, "#000000")
             txt_rect = txt_surf.get_rect(center = self.rect.center)
             screen.blit(txt_surf, txt_rect)
 
