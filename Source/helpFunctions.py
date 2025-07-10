@@ -34,7 +34,7 @@ def heuristic_blocking_chain(gameboard):
         game_board: The current game board state containing vehicles and layout.
         
     Output:
-        int: Number of unique vehicles blocking the target vehicle's right path.
+        int: Number of unique vehicles that form a chain block
     """
     vehicles = gameboard.vehicles
 
