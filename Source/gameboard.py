@@ -6,8 +6,8 @@ class Gameboard():
 
     # Constructor of Gameboard class
     def __init__(self, width, height, vehicles):
-        self.width = config.WIDTH
-        self.height = config.HEIGHT
+        self.width = config.GAMEBOARD_WIDTH
+        self.height = config.GAMEBOARD_HEIGHT
 
         # Fill the board with dots
         self.board = [["." for x in range(self.width)] for y in range(self.height)]
@@ -27,7 +27,7 @@ class Gameboard():
                     self.board[int(vehicle.y + i)][int(vehicle.x)] = vehicle.id
 
         # arrange the order of vehicles in matrix order
-        self.vehicles = sorted(vehicles, key=lambda v: (v.y, v.x))
+        self.vehicles = sorted(vehicles, key = lambda v: (v.y, v.x))
 
     # Represents the gameboard object as a string
     def __repr__(self):

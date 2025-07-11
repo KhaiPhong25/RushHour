@@ -1,28 +1,28 @@
 import pygame
 import sys
 import button
-import boardRenderer
+import config
 import gameFunctions
-import helpFunctions
 
 # Initialize PyGame and configure screen
 pygame.init()
-WIDTH, HEIGHT = 800, 650
-SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
+SCREEN = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 pygame.display.set_caption("Rush Hour")
+
 FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 20)
+LEVEL_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 30)
 DETAIL_TITLE_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 60)
 DETAIL_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 25)
 
 # Load and scale background images
-background = pygame.image.load("Images/background.png")
-background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+background = pygame.image.load("Images/welcome_screen.png")
+background = pygame.transform.scale(background, (SCREEN.get_width(), SCREEN.get_height()))
 
 level_background = pygame.image.load("Images/Levels/select_level_background.png")
-level_background = pygame.transform.scale(level_background, (WIDTH, HEIGHT))
+level_background = pygame.transform.scale(level_background, (SCREEN.get_width(), SCREEN.get_height()))
 
 select_algo_background = pygame.image.load("Images/Algorithms/select_algo_background.png")
-select_algo_background = pygame.transform.scale(select_algo_background, (WIDTH - 350, HEIGHT - 450))
+select_algo_background = pygame.transform.scale(select_algo_background, (SCREEN.get_width() - 350, SCREEN.get_height() - 450))
 
 # Set up welcome message with fade effect
 text_surface = FONT.render("Click on the screen to start the game", True, (255, 255, 255))
@@ -33,246 +33,146 @@ alpha = 0
 fade_speed = 3
 
 # Game state flags (used for tracking game state transitions)
-state = {
-    "state_game_flag" : False,
-    "game_started_flag" : False,
-    "paused_game_flag" : False,
-    "close_game_flag" : False,
-    "reset_game_flag" : False,
-    "start_solve_flag" : False,
-    "should_load_level_flag" : False,
-    "execute_algorithm_flag" : False,
-    "animation_finished_flag" : False,
-    "no_solution_flag" : False,
-    "no_solution_time" : 0,
-    "interpolating" : False,
-    "interpolation_progress" : 0,
-    "interpolation_frames" : 24,
-    "selected_level" : 0,
-    "selected_algorithm" : None,
-    "current_solver" : None,
-    "show_algo_selector" : False,
-    "board_renderer" : None,
-    "list_boardgame" : None,
-    "current_step_index" : 0,
-    "final_move" : 0,
-    "time_execution" : 0,
-    "peak_memory" : 0,
-    "expanded_nodes" : 0,
-    "total_moves" : None,
-    "total_cost" : None
+states = {
+    # Game flow flags
+    "state_game_flag": False,          # Whether the game has moved past the welcome screen
+    "game_started_flag": False,        # Whether the game has started
+    "paused_game_flag": False,         # Whether the game is currently paused
+    "close_game_flag": False,          # Flag indicating a request to close the current game
+    "reset_game_flag": False,          # Flag indicating a request to reset the game
+    "start_solve_flag": False,         # Whether the auto-solve animation should begin
+    "should_load_level_flag": False,   # Whether a level needs to be loaded after selection
+    "execute_algorithm_flag": False,   # Whether an algorithm is currently being executed
+    "show_algo_selector": False,       # Whether the algorithm selection overlay is visible
+
+    # Level, algorithm and solver selection
+    "selected_level": 0,               # Currently selected level (0 means not selected)
+    "selected_algorithm": None,        # Name of the selected algorithm
+    "current_solver": None,            # Reference to the algorithm function being used
+
+    # Board and animation rendering
+    "board_renderer": None,            # Object that draws the game board
+    "interpolating": False,            # Whether interpolation is happening between states
+    "interpolation_progress": 0,       # Current progress of the interpolation (0.0 to 1.0)
+    "interpolation_frames": 24,        # Number of frames to animate between each move
+    "animation_finished_flag": False,  # Whether final animation has completed
+    "final_move": 0,                   # Animation progress value for final winning move
+
+    # Solution data 
+    "list_boardgame": None,            # List of board states representing the full solution path
+    "current_step_index": 0,           # Index of the current solution step being displayed
+    "time_execution": 0,               # Time taken to compute the solution
+    "peak_memory": 0,                  # Peak memory used during the solving process
+    "expanded_nodes": 0,               # Total number of nodes expanded during solving
+    "total_moves": None,               # Total number of moves in the solution
+    "total_cost": None,                # Total cost of the solution (if applicable)
+
+    # No solution state
+    "no_solution_flag": False,         # Whether the algorithm failed to find a solution
+    "no_solution_time": 0              # Timestamp when the "NO SOLUTION" state was triggered
 }
 
-# Create control buttons (pause, reset, close, algorithm selection)
-close_algo_selector_button = button.Button(590, 210, 50, 50, "", lambda : gameFunctions.hide_algo_selector(state), FONT, "Images/Algorithms/close_algo_selector.png")
-pause_button = button.Button(660, 20, 50, 50, "", lambda : gameFunctions.toggle_pause(state, pause_button), FONT, "Images/Buttons/pause.png")
-close_button = button.Button(720, 20, 50, 50, "", lambda : gameFunctions.close_game(state, pause_button), FONT, "Images/Buttons/close.png")
-reset_button = button.Button(600, 20, 50, 50, "", lambda : gameFunctions.reset_game(state), FONT, "Images/Buttons/reset.png")
-select_algo_button = button.Button(540, 20, 50, 50, "", lambda : gameFunctions.select_algorithm(state), FONT, "Images/Buttons/choice.png")
-next_level_button = button.Button(540, 20, 50, 50, "", lambda : gameFunctions.next_level(state), FONT, "Images/Buttons/nextlevel.png")
-view_step_button = button.Button(380, 480, 50, 50, "", lambda : gameFunctions.view_step(state), FONT, "Images/Buttons/viewstep.png")
-information_button = button.Button(20, 20, 50, 50, "", lambda : gameFunctions.print_details(state, SCREEN, view_step_button, DETAIL_TITLE_FONT, DETAIL_FONT), FONT, "Images/Buttons/information.png")
+
+# Create control buttons
+buttons = {
+    # Overlay controls
+    "close_algo_selector_button": button.Button(
+        590, 210, 50, 50, "",
+        lambda: gameFunctions.hide_algo_selector(states),
+        FONT, "Images/Algorithms/close_algo_selector.png"
+    ),  # Button to close the algorithm selection overlay
+
+    # Gameplay controls
+    "pause_button": button.Button(
+        660, 20, 50, 50, "",
+        lambda: gameFunctions.toggle_pause(states, buttons["pause_button"]),
+        FONT, "Images/Buttons/pause.png"
+    ),  # Pause and resume the simulation
+
+    "reset_button": button.Button(
+        600, 20, 50, 50, "",
+        lambda: gameFunctions.reset_game(states),
+        FONT, "Images/Buttons/reset.png"
+    ),  # Reset the current game and reload the level
+
+    "close_button": button.Button(
+        720, 20, 50, 50, "",
+        lambda: gameFunctions.close_game(states, buttons["pause_button"]),
+        FONT, "Images/Buttons/close.png"
+    ),  # Exit to level selection screen
+
+    # Solver and algorithm control
+    "select_algo_button": button.Button(
+        540, 20, 50, 50, "",
+        lambda: gameFunctions.select_algorithm(states),
+        FONT, "Images/Buttons/choice.png"
+    ),  # Open algorithm selection overlay
+
+    "next_level_button": button.Button(
+        540, 20, 50, 50, "",
+        lambda: gameFunctions.next_level(states),
+        FONT, "Images/Buttons/nextlevel.png"
+    ),  # Advance to the next level after completion
+
+    "view_step_button": button.Button(
+        380, 480, 50, 50, "",
+        lambda: gameFunctions.view_step(states),
+        FONT, "Images/Buttons/viewstep.png"
+    ),  # Toggle between overview and step-by-step mode
+
+    # Information display
+    "information_button": button.Button(
+        20, 20, 50, 50, "",
+        lambda: gameFunctions.print_details(states, SCREEN, buttons["view_step_button"], DETAIL_TITLE_FONT, DETAIL_FONT),
+        FONT, "Images/Buttons/information.png"
+    )  # Show game statistics and algorithm results
+}
+
 
 # Main game loop
 if __name__ == "__main__":
     clock = pygame.time.Clock()
     running = True
 
-    level_buttons = gameFunctions.create_level_buttons(lambda lv: gameFunctions.on_level_selected(state, lv), FONT)
-    algorithm_buttons = gameFunctions.create_algorithm_buttons(state, SCREEN, FONT)
+    level_buttons = gameFunctions.create_level_buttons(lambda lv: gameFunctions.on_level_selected(states, lv), FONT)
+    algorithm_buttons = gameFunctions.create_algorithm_buttons(states, SCREEN, FONT)
 
     while running:
         # Handle user input
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if not state["state_game_flag"]:
-                    state["state_game_flag"] = True
-                    continue
-
-            # Event handling based on game state
-            if state["state_game_flag"] and state["selected_level"] == 0:
-                for btn in level_buttons:
-                    btn.handle_event(event)
-
-            if state["show_algo_selector"]:   
-                close_algo_selector_button.handle_event(event)
-
-                for btn in algorithm_buttons:
-                    btn.handle_event(event)
-
-            if state["selected_level"] and not state["show_algo_selector"] and not state["execute_algorithm_flag"]:
-                pause_button.handle_event(event)
-                reset_button.handle_event(event)
-
-                if state["list_boardgame"]:
-                    information_button.handle_event(event)
-
-                if not state["list_boardgame"]:
-                    select_algo_button.handle_event(event)
-
-                if state["list_boardgame"] and state["current_step_index"] >= len(state["list_boardgame"]):
-                        if state["selected_level"] != 0 and state["selected_level"] < 10:
-                            next_level_button.handle_event(event)
-
-                close_button.handle_event(event)                
-
-            if state["execute_algorithm_flag"]:
-                view_step_button.handle_event(event)
+            running = gameFunctions.handle_events(event, states, buttons, level_buttons, algorithm_buttons)
 
         # Show welcome screen with fading text
-        if not state["state_game_flag"]:
-            SCREEN.blit(background, (0, 0))
-            alpha += fade_speed
-
-            if alpha >= 255 or alpha <= 0:
-                fade_speed = -fade_speed
-
-            text_surface.set_alpha(alpha)
-            SCREEN.blit(text_surface, text_rect)
+        if not states["state_game_flag"]:
+            alpha, fade_speed = gameFunctions.render_welcome_screen(SCREEN, background, text_surface, text_rect, alpha, fade_speed)
 
         # Level selection screen
-        elif state["selected_level"] == 0:
-            SCREEN.blit(level_background, (0, 0))
-
-            for btn in level_buttons:
-                btn.draw(SCREEN)
+        elif states["selected_level"] == 0:
+            gameFunctions.render_level_selection(SCREEN, level_background, level_buttons)
 
         # Load level and render board
-        elif state["should_load_level_flag"] and state["selected_level"] != 0:
-            file_name = f"Map/gameboard{state['selected_level']}.json"
-            gameboard = helpFunctions.load_gameboard(file_name)
-            state["board_renderer"] = boardRenderer.BoardRenderer(gameboard, "Images/boardgame.png")
-            state["should_load_level_flag"] = False
-
-            SCREEN.blit(background, (0, 0))
-            state["board_renderer"].draw(SCREEN)
-
-            if state["selected_level"] != 0:
-                level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {state['selected_level']}", True, "#000000")
-                level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
-                SCREEN.blit(level_text, level_rect)
-
-            pause_button.draw(SCREEN)
-            reset_button.draw(SCREEN)
-            select_algo_button.draw(SCREEN)
-            close_button.draw(SCREEN)
-            pygame.display.flip()
+        elif states["should_load_level_flag"] and states["selected_level"] != 0:
+            gameFunctions.load_and_render_level(states, SCREEN, background, buttons, LEVEL_FONT)
 
         # Main game simulation loop
-        elif state["board_renderer"]:
-            SCREEN.blit(background, (0, 0))
-
-            # Step-by-step animation if not paused
-            if state["start_solve_flag"] and state["list_boardgame"] and not state["paused_game_flag"]:
-                # Animate interpolation between current and next state
-                if not state["interpolating"] and state["current_step_index"] < len(state["list_boardgame"]) - 1:
-                    state["interpolating"] = True
-                    state["interpolation_progress"] = 0
-
-                if state["interpolating"]:
-                    gameFunctions.update_interpolation(state)
-
-                # Redraw interface
-                pause_button.draw(SCREEN)
-                reset_button.draw(SCREEN)
-                close_button.draw(SCREEN)
-                information_button.draw(SCREEN)
-
-                if not state["list_boardgame"]:
-                    select_algo_button.draw(SCREEN)
-
-                if state["list_boardgame"] and state["current_step_index"] >= len(state["list_boardgame"]):
-                    next_level_button.draw(SCREEN)
-
-                if state["animation_finished_flag"] == True:
-                    if state["final_move"] < 4:
-                        state["final_move"] += 1 / 480
-                        state["board_renderer"].update_main_vehicle_final_animation(state["list_boardgame"][-1], state["final_move"])
-
-                    else:
-                        state["animation_finished_flag"] = False
-                        state["final_move"] = 0
-
-                    SCREEN.blit(background, (0, 0))
-                    state["board_renderer"].draw(SCREEN)
-
-                    if state["selected_level"] != 0:
-                        level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {state['selected_level']}", True, "#000000")
-                        level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
-                        SCREEN.blit(level_text, level_rect)
-
-            # Draw board and control buttons
-            state["board_renderer"].draw(SCREEN)
-            if state["selected_level"] != 0:
-                level_text = pygame.font.Font("Font/Gagalin-Regular.otf", 30).render(f"Level {state['selected_level']}", True, "#000000")
-                level_rect = level_text.get_rect(center = (WIDTH // 2, 25))
-                SCREEN.blit(level_text, level_rect)
-
-            pause_button.draw(SCREEN)
-            reset_button.draw(SCREEN)
-
-            if state["list_boardgame"]:
-                information_button.draw(SCREEN)
-
-            if not state["list_boardgame"]:
-                select_algo_button.draw(SCREEN)
-
-            close_button.draw(SCREEN)
-
-            if state["list_boardgame"] and state["current_step_index"] >= len(state["list_boardgame"]): 
-                if state["selected_level"] != 0 and state["selected_level"] < 10:
-                    next_level_button.draw(SCREEN)
+        elif states["board_renderer"]:
+            gameFunctions.render_game_simulation(states, SCREEN, background, buttons, LEVEL_FONT)
 
         # Draw algorithm selection overlay
-        if state["show_algo_selector"]:
-            overlay = pygame.Surface((WIDTH, HEIGHT))
-            overlay.set_alpha(180)
-            overlay.fill((0, 0, 0))
-            SCREEN.blit(overlay, (0, 0))
+        if states["show_algo_selector"]:
+            gameFunctions.render_algorithm_overlay(SCREEN, select_algo_background, buttons["close_button"], algorithm_buttons)
 
-            bg_x = (WIDTH - select_algo_background.get_width()) // 2
-            bg_y = (HEIGHT - select_algo_background.get_height()) // 2
-            SCREEN.blit(select_algo_background, (bg_x, bg_y))
-            close_algo_selector_button.draw(SCREEN)
+        if states["no_solution_flag"]:
+            gameFunctions.render_no_solution(states, SCREEN, DETAIL_TITLE_FONT)
 
-            for btn in algorithm_buttons:
-                btn.draw(SCREEN)
-
-        if state["no_solution_flag"]:
-            elapsed_time = pygame.time.get_ticks() - state["no_solution_time"]
-            if elapsed_time < 2000:
-                overlay = pygame.Surface((WIDTH, HEIGHT))
-                overlay.set_alpha(200)
-                overlay.fill((0, 0, 0))
-                SCREEN.blit(overlay, (0, 0))
-
-                no_solution_text = DETAIL_TITLE_FONT.render("NO SOLUTION", True, "#ff4444")
-                no_solution_rect = no_solution_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-                SCREEN.blit(no_solution_text, no_solution_rect)
-
-            else:
-                state["no_solution_flag"] = False
-
-        elif state["execute_algorithm_flag"]:
-            gameFunctions.print_details(state, SCREEN, view_step_button, DETAIL_TITLE_FONT, DETAIL_FONT)
+        elif states["execute_algorithm_flag"]:
+            gameFunctions.print_details(states, SCREEN, buttons["view_step_button"], DETAIL_TITLE_FONT, DETAIL_FONT)
 
         # Check if reset is triggered
-        if gameFunctions.is_reset(state):
-            state["should_load_level_flag"] = True
-            state["start_solve_flag"] = False
-            state["list_boardgame"] = None
+        gameFunctions.handle_reset(states)
 
         # Check if close is triggered
-        if gameFunctions.is_close(state):
-            state["should_load_level_flag"] = False
-            state["start_solve_flag"] = False
-            state["selected_level"] = 0
-            state["board_renderer"] = None
-            state["close_game_flag"] = False
-            state["list_boardgame"] = None
+        gameFunctions.handle_close(states)
 
         # Refresh screen and cap frame rate
         pygame.display.flip()

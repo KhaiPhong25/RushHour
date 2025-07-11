@@ -1,4 +1,5 @@
 import pygame
+import config
 from gameboard import Gameboard        
 from vehicleSprite import VehicleSprite  
 
@@ -12,11 +13,11 @@ class BoardRenderer:
         # Load and scale the board background image to match the screen size (800x650)
         self.board_image = pygame.image.load(board_image_path).convert()
         original_width, original_height = self.board_image.get_size()
-        self.board_image = pygame.transform.scale(self.board_image, (800, 650))
+        self.board_image = pygame.transform.scale(self.board_image, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 
         # Calculate scaled offset to correctly align vehicles on resized board
-        scale_x = 800 / original_width
-        scale_y = 650 / original_height
+        scale_x = config.SCREEN_WIDTH / original_width
+        scale_y = config.SCREEN_HEIGHT / original_height
         self.offset_x = int(offset_x * scale_x)
         self.offset_y = int(offset_y * scale_y)
 

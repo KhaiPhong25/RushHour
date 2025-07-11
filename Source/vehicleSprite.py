@@ -29,7 +29,7 @@ class VehicleSprite:
         # Draw an outline around the vehicle if it is the main vehicle
         if self.vehicle.id == "#":
             # Pulse effect for the outline color
-            pulse = 128 + 127 * math.sin(pygame.time.get_ticks() * 0.005)
+            pulse = int(128 + 127 * math.sin(pygame.time.get_ticks() * 0.005))
             outline_color = (255, 255, pulse)
 
             # Create a rectangle for the outline, slightly larger than the vehicle image

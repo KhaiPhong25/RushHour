@@ -41,7 +41,7 @@ def dls_algorithm(gameboard: Gameboard, limit):
 
         # Get the successors of the current state
         for new_vehicles in current_gameboard.check_for_moves():
-            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
+            next_gameboard = Gameboard(config.GAMEBOARD_WIDTH, config.GAMEBOARD_HEIGHT, new_vehicles)
 
             if next_gameboard not in visited:
 
@@ -94,7 +94,7 @@ def bfs_algorithm(gameboard: Gameboard):
 
         # Get the successors of the current state
         for new_vehicles in current_gameboard.check_for_moves():
-            next_gameboard = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
+            next_gameboard = Gameboard(config.GAMEBOARD_WIDTH, config.GAMEBOARD_HEIGHT, new_vehicles)
             # If the next state has not been visited yet
             if next_gameboard not in visited:
                 # Check if the next state has solved the game
@@ -164,7 +164,7 @@ def ucs_algorithm(game_board: Gameboard):
         # Generate successors and their costs
         # Generate successors
         for new_vehicles in current_board.check_for_moves():
-            new_game_board = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
+            new_game_board = Gameboard(config.GAMEBOARD_WIDTH, config.GAMEBOARD_HEIGHT, new_vehicles)
             
             # calculate new cost
             new_cost = current_cost
@@ -236,7 +236,7 @@ def A_star_algorithm(game_board):
         # Generate all possible moves from current state
         for new_vehicles in current_board.check_for_moves():
             # Create new game board from this move configuration
-            new_game_board = Gameboard(config.WIDTH, config.HEIGHT, new_vehicles)
+            new_game_board = Gameboard(config.GAMEBOARD_WIDTH, config.GAMEBOARD_HEIGHT, new_vehicles)
 
             # Calculate new path cost (g)
             # Add vehicle length as cost when it moves

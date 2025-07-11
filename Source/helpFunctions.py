@@ -4,11 +4,8 @@ from gameboard import Gameboard
 import config
 from collections import deque
 
+# Load gameboard from file .json
 def load_gameboard(file_path):
-    # Define the board size (fixed at 6x6 for this project)
-    width = 6
-    height = 6
-
     # Open the JSON file and load the vehicle data
     with open(file_path, 'r') as file:
         data =  json.load(file)
@@ -20,7 +17,7 @@ def load_gameboard(file_path):
         vehicles.append(new_vehicle)
 
     # Create the gameboard with the specified width, height, and list of vehicles
-    gameboard = Gameboard(width, height, vehicles)
+    gameboard = Gameboard(config.GAMEBOARD_WIDTH, config.GAMEBOARD_HEIGHT, vehicles)
 
     # Return the Gameboard object
     return gameboard
@@ -71,7 +68,7 @@ def heuristic_blocking_chain(gameboard):
             if left_pos >= 0 and gameboard.board[left_pos][blocker.y] != '.' and gameboard.board[left_pos][blocker.y] not in blocking_vehicles:
                 to_check.append(gameboard.board[left_pos][blocker.y])
                 blocking_vehicles[gameboard.board[left_pos][blocker.y]] = gameboard.board[left_pos][blocker.y]
-            if right_pos <= config.WIDTH - 1 and gameboard.board[right_pos][blocker.y] != '.' and gameboard.board[right_pos][blocker.y] not in blocking_vehicles:
+            if right_pos <= config.GAMEBOARD_WIDTH - 1 and gameboard.board[right_pos][blocker.y] != '.' and gameboard.board[right_pos][blocker.y] not in blocking_vehicles:
                 to_check.append(gameboard.board[right_pos][blocker.y])
                 blocking_vehicles[gameboard.board[right_pos][blocker.y]] = gameboard.board[right_pos][blocker.y]
 
@@ -82,7 +79,7 @@ def heuristic_blocking_chain(gameboard):
             if above_pos >= 0 and gameboard.board[blocker.x][above_pos] != '.' and gameboard.board[blocker.x][above_pos] not in blocking_vehicles:
                 to_check.append(gameboard.board[blocker.x][above_pos])
                 blocking_vehicles[gameboard.board[blocker.x][above_pos]] = gameboard.board[blocker.x][above_pos]
-            if bottom_pos <= config.HEIGHT - 1 and gameboard.board[blocker.x][bottom_pos] != '.' and gameboard.board[blocker.x][bottom_pos] not in blocking_vehicles:
+            if bottom_pos <= config.GAMEBOARD_HEIGHT - 1 and gameboard.board[blocker.x][bottom_pos] != '.' and gameboard.board[blocker.x][bottom_pos] not in blocking_vehicles:
                 to_check.append(gameboard.board[blocker.x][bottom_pos])
                 blocking_vehicles[gameboard.board[blocker.x][bottom_pos]] = gameboard.board[blocker.x][bottom_pos]
 
@@ -104,10 +101,3 @@ def trace_back_solution(visited_list, initial_state, goal_state):
     result.append(initial_state)
     result.reverse()
     return result
-
-def print_solution_path(path):
-    for i in range(len(path)):
-        print(path[i])
-        print('\n \n')
-
-    print(len(path))
