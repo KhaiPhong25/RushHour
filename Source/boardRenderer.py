@@ -10,7 +10,7 @@ class BoardRenderer:
         self.cell_size = cell_size      # Size of each grid cell in pixels
         self.grid_size = grid_size      # Number of rows/columns (default is 6 for Rush Hour)
 
-        # Load and scale the board background image to match the screen size (800x650)
+        # Load and scale the board background image to match the screen size
         self.board_image = pygame.image.load(board_image_path).convert()
         original_width, original_height = self.board_image.get_size()
         self.board_image = pygame.transform.scale(self.board_image, (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
@@ -49,7 +49,7 @@ class BoardRenderer:
                 new_vehicle_sprites.append(sprite)
 
             else:
-                # If new vehicle, create new sprite (note: path corrected below)
+                # If new vehicle, create new sprite
                 image_path = f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
                 new_vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
 
@@ -64,8 +64,10 @@ class BoardRenderer:
         for vehicle in gameboard.vehicles:
             if vehicle.id in sprite_dict:
                 sprite = sprite_dict[vehicle.id]
+
                 if vehicle.id == "#":
                     sprite.update_x_to_move(final_move)
+                    
                 # If vehicle already exists, update its position
                 sprite = sprite_dict[vehicle.id]
                 new_vehicle_sprites.append(sprite)

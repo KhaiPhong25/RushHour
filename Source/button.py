@@ -2,15 +2,16 @@ import pygame
 
 # Button class represents a clickable UI button with optional icon or text
 class Button:
+
+    # Constructor of Button class
     def __init__(self, x, y, w, h, text = "", callback = None, font = None, icon_path = None):
         self.rect = pygame.Rect(x, y, w, h)
         self.text = text                  # Optional text label
         self.callback = callback          # Function to call when clicked
         self.font = font                  # Font for text rendering
-        self.base_icon = None             # Original icon image (if any)
+        self.base_icon = None             # Original icon image
         self.scaled_icon = None           # Resized version for hover effect
         self.hovered = False              # Whether the mouse is currently over the button
-        self.scale_factor = 1.0           # Unused variable (could be removed)
 
         # Load and scale icon if provided
         if icon_path:
@@ -21,7 +22,7 @@ class Button:
     # Draw the button on the screen
     def draw(self, screen):
         if self.base_icon:
-            # Scale up the icon when hovered (for hover effect)
+            # Scale up the icon when hovered
             base_w, base_h = self.rect.width, self.rect.height
             scale = 1.2 if self.hovered else 1.0
             new_size = (int(base_w * scale), int(base_h * scale))
@@ -45,10 +46,6 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.hovered and self.callback:
                 self.callback()  # Trigger callback if clicked
-
-    def update(self):
-        mouse_pos = pygame.mouse.get_pos()
-        self.hovered = self.rect.collidepoint(mouse_pos)
 
     # Update the button's icon dynamically
     def set_icon(self, icon_path):

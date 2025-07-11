@@ -261,4 +261,3 @@ def A_star_algorithm(game_board):
 
     tracemalloc.stop()
     return None, end_time-start_time, peak, num_expanded_node, None, None
-
