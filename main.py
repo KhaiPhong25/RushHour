@@ -1,10 +1,9 @@
 import pygame
 import sys
-import config
-import gameStates
-import gameButtons
-import renderFunctions
-from path import resource_path
+from Code import config
+from Code import gameStates
+from Code import gameButtons
+from Code import renderFunctions
 
 # Initialize PyGame and configure screen
 pygame.init()
@@ -12,19 +11,19 @@ SCREEN = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 pygame.display.set_caption("Rush Hour")
 
 # Load game fonts
-FONT = pygame.font.Font(resource_path("Font/Gagalin-Regular.otf"), 20)
-LEVEL_FONT = pygame.font.Font(resource_path("Font/Gagalin-Regular.otf"), 30)
-DETAIL_TITLE_FONT = pygame.font.Font(resource_path("Font/Gagalin-Regular.otf"), 60)
-DETAIL_FONT = pygame.font.Font(resource_path("Font/Gagalin-Regular.otf"), 25)
+FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 20)
+LEVEL_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 30)
+DETAIL_TITLE_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 60)
+DETAIL_FONT = pygame.font.Font("Font/Gagalin-Regular.otf", 25)
 
 # Load and scale background images
-background = pygame.image.load(resource_path("Images/welcome_screen.png"))
+background = pygame.image.load("Images/welcome_screen.png")
 background = pygame.transform.scale(background, (SCREEN.get_width(), SCREEN.get_height()))
 
-level_background = pygame.image.load(resource_path("Images/Levels/select_level_background.png"))
+level_background = pygame.image.load("Images/Levels/select_level_background.png")
 level_background = pygame.transform.scale(level_background, (SCREEN.get_width(), SCREEN.get_height()))
 
-select_algo_background = pygame.image.load(resource_path("Images/Algorithms/select_algo_background.png"))
+select_algo_background = pygame.image.load("Images/Algorithms/select_algo_background.png")
 select_algo_background = pygame.transform.scale(select_algo_background, (SCREEN.get_width() - 350, SCREEN.get_height() - 450))
 
 # Set up welcome message with fade effect
@@ -39,8 +38,6 @@ fade_speed = 3
 if __name__ == "__main__":
     clock = pygame.time.Clock()
     running = True
-    
-    print(resource_path("Images/Algorithms/close_algo_selector.png"))
 
     # Initialize game states and UI buttons
     states = gameStates.create_game_state()

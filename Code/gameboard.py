@@ -1,5 +1,5 @@
 import math
-from vehicle import Vehicle
+from Code.vehicle import Vehicle
 
 class Gameboard():
 

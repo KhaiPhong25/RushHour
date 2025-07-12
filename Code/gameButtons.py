@@ -1,10 +1,8 @@
-import button
-import algorithmControl
-import gameStates
-import algorithmControl
-import renderFunctions
-from searchAlgorithms import bfs_algorithm, dls_algorithm, A_star_algorithm, ucs_algorithm
-from path import resource_path
+from Code import button
+from Code import algorithmControl
+from Code import gameStates
+from Code import renderFunctions
+from Code.searchAlgorithms import bfs_algorithm, dls_algorithm, A_star_algorithm, ucs_algorithm
 
 # Create control buttons
 def create_control_buttons(states, SCREEN, FONT, DETAIL_TITLE_FONT, DETAIL_FONT):
@@ -13,52 +11,52 @@ def create_control_buttons(states, SCREEN, FONT, DETAIL_TITLE_FONT, DETAIL_FONT)
         "close_algo_selector_button": button.Button(
             590, 210, 50, 50, "",
             lambda: algorithmControl.hide_algo_selector(states),
-            FONT, resource_path("Images/Algorithms/close_algo_selector.png")
+            FONT, "Images/Algorithms/close_algo_selector.png"
         ),  # Button to close the algorithm selection overlay
 
         # Gameplay controls
         "pause_button": button.Button(
             660, 20, 50, 50, "",
             lambda: gameStates.toggle_pause(states, buttons["pause_button"]),
-            FONT, resource_path("Images/Buttons/pause.png")
+            FONT, "Images/Buttons/pause.png"
         ),  # Pause and resume the simulation
 
         "reset_button": button.Button(
             600, 20, 50, 50, "",
             lambda: gameStates.reset_game(states),
-            FONT, resource_path("Images/Buttons/reset.png")
+            FONT, "Images/Buttons/reset.png"
         ),  # Reset the current game and reload the level
 
         "close_button": button.Button(
             720, 20, 50, 50, "",
             lambda: gameStates.close_game(states, buttons["pause_button"]),
-            FONT, resource_path("Images/Buttons/close.png")
+            FONT, "Images/Buttons/close.png"
         ),  # Exit to level selection screen
 
         # Solver and algorithm control
         "select_algo_button": button.Button(
             540, 20, 50, 50, "",
             lambda: algorithmControl.select_algorithm(states),
-            FONT, resource_path("Images/Buttons/choice.png")
+            FONT, "Images/Buttons/choice.png"
         ),  # Open algorithm selection overlay
 
         "next_level_button": button.Button(
             540, 20, 50, 50, "",
             lambda: gameStates.next_level(states),
-            FONT, resource_path("Images/Buttons/nextlevel.png")
+            FONT, "Images/Buttons/nextlevel.png"
         ),  # Advance to the next level after completion
 
         "view_step_button": button.Button(
             380, 480, 50, 50, "",
             lambda: gameStates.view_step(states),
-            FONT, resource_path("Images/Buttons/viewstep.png")
+            FONT, "Images/Buttons/viewstep.png"
         ),  # Toggle between overview and step-by-step mode
 
         # Information display
         "information_button": button.Button(
             20, 20, 50, 50, "",
             lambda: renderFunctions.print_details(states, SCREEN, buttons["view_step_button"], DETAIL_TITLE_FONT, DETAIL_FONT),
-            FONT, resource_path("Images/Buttons/information.png")
+            FONT, "Images/Buttons/information.png"
         )  # Show game statistics and algorithm results
     }
 
@@ -87,8 +85,8 @@ def create_algorithm_buttons(state, SCREEN, FONT):
             return callback
 
         # Create button with icon and corresponding callback
-        btn = button.Button(x, y, width, height, "", callback=make_callback(name),
-                            font=FONT, icon_path=resource_path(f"Images/Algorithms/{name}.png"))
+        btn = button.Button(x, y, width, height, "", callback = make_callback(name),
+                            font = FONT, icon_path = f"Images/Algorithms/{name}.png")
         algorithm_buttons.append(btn)
 
     return algorithm_buttons
@@ -105,8 +103,8 @@ def create_level_buttons(callback, FONT):
         y = start_y + (i // columns) * gap  # Calculate Y based on row
 
         # Create button for each level and assign level-specific callback
-        btn = button.Button(x, y, width, height, "", lambda lv=level_number: callback(lv),
-                            FONT, icon_path=resource_path(f"Images/Levels/level{level_number}.png"))
+        btn = button.Button(x, y, width, height, "", lambda lv = level_number: callback(lv),
+                            FONT, icon_path = f"Images/Levels/level{level_number}.png")
         level_buttons.append(btn)
 
     return level_buttons

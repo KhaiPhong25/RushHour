@@ -1,6 +1,6 @@
 import pygame
 import math
-from vehicle import Vehicle
+from Code.vehicle import Vehicle
 
 # VehicleSprite handles rendering a vehicle image on the screen based on its state
 class VehicleSprite:

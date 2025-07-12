@@ -1,8 +1,8 @@
 import json
-import config
-from vehicle import Vehicle
-from gameboard import Gameboard
 from collections import deque
+from Code import config
+from Code.vehicle import Vehicle
+from Code.gameboard import Gameboard
 
 # Load gameboard from file .json
 def load_gameboard(file_path):

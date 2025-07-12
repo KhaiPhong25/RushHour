@@ -1,11 +1,11 @@
-from gameboard import Gameboard
-from vehicle import Vehicle
+import time
+import tracemalloc
 from queue import PriorityQueue
 from collections import deque
-import helpFunctions
-import tracemalloc
-import time
-import config
+from Code import config
+from Code import helpFunctions
+from Code.gameboard import Gameboard
+from Code.vehicle import Vehicle
 
 # Depth-Limited Search (DLS) algorithm
 def dls_algorithm(gameboard: Gameboard, limit):

@@ -1,8 +1,7 @@
 import pygame
-import helpFunctions
-import boardRenderer
-import transition
-from path import resource_path
+from Code import helpFunctions
+from Code import boardRenderer
+from Code import transition
 
 # Render welcome screen with fade-in text
 def render_welcome_screen(SCREEN, background, text_surface, text_rect, alpha, fade_speed):
@@ -103,9 +102,9 @@ def print_details(state, SCREEN, view_step_button, DETAIL_TITLE_FONT, DETAIL_FON
 # Load level and render initial state
 def load_and_render_level(state, SCREEN, background, buttons, FONT):
     # Load gameboard from file
-    file_name = resource_path(f"Map/gameboard{state['selected_level']}.json")
+    file_name = f"Map/gameboard{state['selected_level']}.json"
     gameboard = helpFunctions.load_gameboard(file_name)
-    state["board_renderer"] = boardRenderer.BoardRenderer(gameboard, resource_path("Images/boardgame.png"))
+    state["board_renderer"] = boardRenderer.BoardRenderer(gameboard, "Images/boardgame.png")
     state["should_load_level_flag"] = False
 
     # Draw background and board

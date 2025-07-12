@@ -1,6 +1,6 @@
-import config
-from vehicle import Vehicle
-from gameboard import Gameboard
+from Code import config
+from Code.vehicle import Vehicle
+from Code.gameboard import Gameboard
 
 # Update gameboard interpolation for smooth movement
 def update_interpolation(state):
