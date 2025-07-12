@@ -1,4 +1,5 @@
 import pygame
+from path import resource_path
 
 # Game state flags (used for tracking game state transitions)
 def create_game_state():
@@ -46,7 +47,7 @@ def create_game_state():
 # Toggle pause/resume and update pause/play icon
 def toggle_pause(state, pause_button):
     state["paused_game_flag"] = not state["paused_game_flag"]
-    pause_button.set_icon("Images/Buttons/play.png" if state["paused_game_flag"] else "Images/Buttons/pause.png")
+    pause_button.set_icon(resource_path("Images/Buttons/play.png") if state["paused_game_flag"] else resource_path("Images/Buttons/pause.png"))
 
 # Check if game is currently paused
 def is_paused(state):
@@ -82,7 +83,7 @@ def close_game(state, pause_button):
     state["final_move"] = 0
     state["animation_finished_flag"] = False
     state["list_boardgame"] = None
-    pause_button.set_icon("Images/Buttons/pause.png")
+    pause_button.set_icon(resource_path("Images/Buttons/pause.png"))
 
 # Check if close was requested
 def is_close(state):

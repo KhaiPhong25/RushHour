@@ -1,6 +1,7 @@
 import pygame
 import config
 import helpFunctions
+from path import resource_path
 
 # Display algorithm selector overlay
 def select_algorithm(state):
@@ -37,7 +38,7 @@ def select_algorithm_callback(state, algo_func, SCREEN, FONT):
     # Run the algorithm and store results
     if state["board_renderer"]:
         # Load game board from file based on selected level
-        file_name = f"Map/gameboard{state['selected_level']}.json"
+        file_name = resource_path(f"Map/gameboard{state['selected_level']}.json")
         gameboard = helpFunctions.load_gameboard(file_name)
 
         # Special case for DLS algorithm (requires depth limit)

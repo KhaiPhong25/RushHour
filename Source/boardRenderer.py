@@ -2,6 +2,7 @@ import pygame
 import config
 from gameboard import Gameboard        
 from vehicleSprite import VehicleSprite  
+from path import resource_path
 
 # BoardRenderer handles rendering the game board and vehicles on screen
 class BoardRenderer:
@@ -24,7 +25,7 @@ class BoardRenderer:
         # Create a list of VehicleSprite objects from the initial gameboard state
         self.vehicle_sprites = []
         for vehicle in self.gameboard.vehicles:
-            image_path = f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
+            image_path = resource_path(f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png")
             self.vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
 
     # Draw the board and all vehicle sprites on the screen
@@ -50,7 +51,7 @@ class BoardRenderer:
 
             else:
                 # If new vehicle, create new sprite
-                image_path = f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png"
+                image_path = resource_path(f"Images/Vehicles/{vehicle.id}{vehicle.orientation}{vehicle.length}.png")
                 new_vehicle_sprites.append(VehicleSprite(vehicle, image_path, self.cell_size))
 
         # Replace the current sprite list with the updated one
